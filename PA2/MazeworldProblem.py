@@ -23,11 +23,12 @@ class MazeworldProblem:
     def manhattan_heuristic(self, curr_state):
 
         man_total = 0
+        # print("curr state", curr_state)
+        for i in range(1, len(curr_state)):
+            # print("curr", curr_state[i], "goal", self.goal_locations[i-1])
+            man_total += abs(curr_state[i] - self.goal_locations[i-1])
 
-        for i in range(1, len(curr_state)-1):
-            man_total += abs(curr_state[i] - self.goal_locations[i])
-
-        return man_total
+        return math.sqrt(man_total)
 
     # given a sequence of states (including robot turn), modify the maze and print it out.
     #  (Be careful, this does modify the maze!)
@@ -69,7 +70,7 @@ class MazeworldProblem:
         # increment 1 to get to next robot that needs to be moved
         robot_to_move = robot_moved + 1 if robot_moved + 1 < self.robot_count else 0
 
-        # unless we are at the goal state
+        # # unless we are at the goal state
         if not self.goal_test(state):
             # keep incrementing until we find a robot that has yet to reach the goal state
             while ((self.goal_locations[2*robot_to_move], self.goal_locations[2*robot_to_move+1]) == robot_list[robot_to_move]):

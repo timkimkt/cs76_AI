@@ -52,15 +52,13 @@ def astar_search(search_problem, heuristic_fn):
     # you write the rest:
     while pqueue:
 
-        curr_node = pqueue.pop()
-        #curr_node = heappop(pqueue)
-        if curr_node in visited_cost and curr_node.transition_cost > visited_cost[curr_node.state]:
+        #curr_node = pqueue.pop()
+        curr_node = heappop(pqueue)
+
+        if curr_node.state in visited_cost and curr_node.transition_cost > visited_cost[curr_node.state]:
             continue
 
         solution.nodes_visited += 1
-
-        #if visited curr_node
-        #heuristic = curr_node.heuristic
 
         if search_problem.goal_test(curr_node.state):
             solution.cost = curr_node.transition_cost
@@ -69,35 +67,29 @@ def astar_search(search_problem, heuristic_fn):
 
         for child in search_problem.get_successors(curr_node.state):
 
-            #child_total_cost = curr_node.transition_cost + visited_cost[curr_node.state]
-
             # if the node has not been visited yet
             if (child not in visited_cost):
                 # create a new AstarNode with the child
                 child_node = AstarNode(child, heuristic_fn(child), curr_node)
-
                 # calculate the total cost to reaching child
-                visited_cost[child_node.state] = child_node.transition_cost + visited_cost[curr_node.state]
+                # visited_cost[child_node.state] = child_node.transition_cost + visited_cost[curr_node.state]
+                visited_cost[child_node.state] = child_node.transition_cost + curr_node.transition_cost
                 # update child cost as the total cost
                 child_node.transition_cost = visited_cost[child_node.state]
-
-
                 # push the node into the heap
                 heappush(pqueue, child_node)
-                # increment number of nodes visited
-                # solution.nodes_visited += 1
 
             # otherwise if the child has been visited
             elif child in visited_cost:
                 # calculate the total cost
-                child_total_cost = child_node.transition_cost + visited_cost[curr_node.state]
+                #child_total_cost = child_node.transition_cost + visited_cost[curr_node.state]
+                child_total_cost = child_node.transition_cost + curr_node.transition_cost
 
                 # if the child has been visited and we find a node with lower cost
                 if child_total_cost < visited_cost[child]:
 
                     # create a new AstarNode and push into heap
                     child_node = AstarNode(child, heuristic_fn(child), curr_node)
-
                     # update the new lower cost
                     visited_cost[child_node.state] = child_total_cost
                     # input new cost into newly created AstarNode
