@@ -10,9 +10,7 @@ class AstarNode:
         self.state = state
         self.heuristic = heuristic
         self.parent = parent
-
         self.transition_cost = 1 if (self.parent and (self.parent.state[1:] != self.state[1:])) else transition_cost
-        # self.transition_cost = transition_cost + self.parent.transition_cost if self.parent else transition_cost
 
     def priority(self):
         # you write this part
