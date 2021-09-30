@@ -5,13 +5,47 @@
 - Sep 30, 2021
 - '22
 
-## Description
-- How do your implemented algorithms work? What design decisions did you make? How you laid out the problems?
+# Description
 
-## Evaluation
-- Do your implemented algorithms actually work? How well? If it doesn’t work, can you tell why not? What partial successes did you have that deserve partial credit? 
+## Implement A* Search
 
-## Discussion Questions
+#### Implementation 
+
+The A* search alogrithm works very simliar to the breadth-first search algorithm. The key difference arises from the fact that we are using a prority queue in the form of a heap. By modifying its comparison operator function, we are able to pop the nodes with the lowest total cost, which is calculated by the sum of the heuristic and transition cost. Note that we do not actually pop the node with the higher cost. Instead, we use a dictionary to keep track of nodes visited and its lowest total cost. Thus, for each successor state, if the state has not yet been observed, we pack it into a search node and push it to the priority queue. If the successor has been observed (i.e. in the visited dictionary) and if the successor's total cost is lower than the one in the dictionary, we update the cost and push a new search node into the heap with this lower cost. If we reach the goal state, we update the solution cost and path and return. Otherwise, we will continue in this fashion until the prority queue is empty, skipping any nodes that have already been visited and have a higher cost. 
+
+#### Design
+
+Although the action taken when we find a state that has not been visited and action taken when we find that a visited state can have a lower total cost, the conditions have been separated out to make the thought process more clear. As noted, 
+
+## MazeworldProblem (Multiple Robot)
+
+#### Modelling the problem
+
+#### Implementation
+
+#### Design
+
+## SensorlessProblem (Blind Robot)
+
+#### Modelling the problem
+
+#### Implementation
+
+#### Design
+
+
+# Evaluation
+
+Do your implemented algorithms actually work? How well? If it doesn’t work, can you tell why not? What partial successes did you have that deserve partial credit? 
+
+### MazeworldProblem (Multiple Robot)
+- The algorithm appears to work quite well. 
+
+
+### SensorlessProblem (Blind Robot)
+- The blind robot was tested up to a maze with the dimension of 15 x 15 (Maze 6). The algorithm began to take quite some time before completition due to the total possible number of states. 
+
+# Discussion Questions
 
 ### On A*: 
 

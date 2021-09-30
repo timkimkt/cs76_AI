@@ -3,56 +3,62 @@ from time import sleep
 
 class SensorlessProblem:
 
-    ## You write the good stuff here:
+    # constructor
     def __init__(self, maze):
-        self.maze =  maze
-        self.start_state = self.create_start_state()
-        self.blind_heuristic = self.blind_heuristic_fn
+        self.maze =  maze                              # maze
+        self.start_state = self.create_start_state()   # possible locations
+        self.blind_heuristic = self.blind_heuristic_fn # based on no. of possible locations
+
     def __str__(self):
         string =  "Blind robot problem: "
         return string
 
+    # creates a tuple of all possible robot coordinates
     def create_start_state(self):
         res = [ ]
-
         for x in range(self.maze.width):
             for y in range(self.maze.height):
                 if self.maze.is_floor(x, y):
                     res.append((x, y))
+        # returns a tuple of tuples (coordinates)
         return tuple(res)
 
+    # simple heuristic based on number of possible robot locations
     def blind_heuristic_fn(self, state):
         return len(state)
 
-    # question: so only print where the robot can go?
+    # returns successors for given state
     def get_successors(self, state):
 
         # list of successors
         successors = [ ]
 
-        # # update robot location
-        #self.maze.robotloc = state
+        # update robot location
+        self.maze.robotloc = state
 
         # for 4 possible actions from each state
         directions = [[1, 0], [-1, 0], [0, 1], [0, -1]]
 
+        # for each direction
         for dx, dy in directions:
+            # convert to list to append
             state_list = list(state)
+            # set of possible coordinates
             res = set()
             for i in range(len(state)):
-                # for each possible coordinate in state
+                # for each coordinate in state
                 x, y = state_list[i]
                 # move it in current direction
                 new_x, new_y = x + dx, y + dy
                 # if the new coordinate is valid
                 if (self.maze.is_floor(new_x, new_y)):
-                    #res.add((new_x, new_y))
+                    # add to the set
                     res.add((new_x, new_y))
-
+            # append all possible coordinates to successor
             successors.append(tuple(res))
         return successors
 
-    # we reach goal when there is only one possible location of robt
+    # we reach goal when there is only one possible location of robot
     def goal_test(self, state):
         return len(state) == 1
 
