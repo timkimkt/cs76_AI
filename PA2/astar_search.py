@@ -53,6 +53,10 @@ def astar_search(search_problem, heuristic_fn):
     while pqueue:
 
         curr_node = pqueue.pop()
+        #curr_node = heappop(pqueue)
+        if curr_node in visited_cost and curr_node.transition_cost > visited_cost[curr_node.state]:
+            continue
+
         solution.nodes_visited += 1
 
         #if visited curr_node
@@ -93,7 +97,6 @@ def astar_search(search_problem, heuristic_fn):
 
                     # create a new AstarNode and push into heap
                     child_node = AstarNode(child, heuristic_fn(child), curr_node)
-                    heappush(pqueue, child_node)
 
                     # update the new lower cost
                     visited_cost[child_node.state] = child_total_cost
@@ -101,9 +104,11 @@ def astar_search(search_problem, heuristic_fn):
                     child_node.transition_cost = visited_cost[child_node.state]
                     # increment number of nodes visited
                     # solution.nodes_visited += 1
+                    heappush(pqueue, child_node)
 
-                else:
-                    # otherwise skip the node
-                    continue
+
+                # else:
+                #     # otherwise skip the node
+                #     continue
 
     return solution
