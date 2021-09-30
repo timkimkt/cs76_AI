@@ -24,8 +24,8 @@ print(result)
 
 # # this should do a bit better:
 result = astar_search(test_mp, test_mp.manhattan_heuristic)
-print(result)
-# test_mp.animate_path(result.path)
+print(result.path)
+test_mp.animate_path(result.path)
 
 # Your additional tests here:
 # test_maze4 = Maze("maze4.maz")

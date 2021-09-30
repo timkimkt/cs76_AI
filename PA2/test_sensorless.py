@@ -21,7 +21,7 @@ print(result)
 # # this should do a bit better:
 result = astar_search(test_mp, test_mp.blind_heuristic)
 print(result)
-# test_mp.animate_path(result.path)
+test_mp.animate_path(result.path)
 
 # Your additional tests here:
 # You write this:

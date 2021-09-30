@@ -31,7 +31,7 @@ class SensorlessProblem:
         successors = [ ]
 
         # # update robot location
-        # self.maze.robotloc = state
+        #self.maze.robotloc = state
 
         # for 4 possible actions from each state
         directions = [[1, 0], [-1, 0], [0, 1], [0, -1]]
@@ -46,31 +46,35 @@ class SensorlessProblem:
                 new_x, new_y = x + dx, y + dy
                 # if the new coordinate is valid
                 if (self.maze.is_floor(new_x, new_y)):
+                    #res.add((new_x, new_y))
                     res.add((new_x, new_y))
-            successors.append(tuple(res))
 
+            successors.append(tuple(res))
         return successors
 
-
+    # we reach goal when there is only one possible location of robt
     def goal_test(self, state):
         return len(state) == 1
-
-    # robot doesn't know if it has moved
-    # def robot_moved(self, state):
-    #     directions = [[1, 0], [-1, 0], [0, 1], [0, -1]]
 
     def animate_path(self, path):
         # reset the robot locations in the maze
         self.maze.robotloc = tuple(self.start_state)
 
+        # modified to reflect that each state is a tuple of tuples
+        # (i.e. tuple of robot coordinates)
         for state in path:
             print(str(self))
-            self.maze.robotloc = tuple(state)
+
+            # temporary list to unpack all coordinates
+            temp = [ ]
+            for cx, cy in state:
+                temp.extend([cx, cy])
+
+            # robotloc now contains all possible coordinates of robots in given state
+            self.maze.robotloc = tuple(temp)
+
             sleep(1)
-
             print(str(self.maze))
-
-
 
 
 ## A bit of test code

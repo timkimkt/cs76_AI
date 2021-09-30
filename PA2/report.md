@@ -5,7 +5,15 @@
 - Sep 30, 2021
 - '22
 
+## Description
+- How do your implemented algorithms work? What design decisions did you make? How you laid out the problems?
+
+## Evaluation
+- Do your implemented algorithms actually work? How well? If it doesn’t work, can you tell why not? What partial successes did you have that deserve partial credit? 
+
 ## Discussion Questions
+
+### On A*: 
 
 #### 1. If there are k robots, how would you represent the state of the system? Hint -- how many numbers are needed to exactly reconstruct the locations of all the robots, if we somehow forgot where all of the robots were? Further hint. Do you need to know anything else to determine exactly what actions are available from this state?
 
@@ -40,5 +48,7 @@ Euclidean distance?
 The 8 puzzle is a special case where there is only one 'floor' and the tiles must move around each other to the goal state. 
 
 #### 7. The state space of the 8-puzzle is made of two disjoint sets.  Describe how you would modify your program to prove this. (You do not have to implement this.)
+
+### On Blind robot problem: 
 
 
