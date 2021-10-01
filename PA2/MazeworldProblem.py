@@ -6,6 +6,7 @@
 
 from Maze import Maze
 from time import sleep
+import math
 
 class MazeworldProblem:
 

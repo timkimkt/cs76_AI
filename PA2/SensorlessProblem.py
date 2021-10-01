@@ -1,3 +1,9 @@
+# Class: COSC 76
+# Assignment: PA 2
+# Date: Sep 30, 2021
+# Author: Tim (Kyoung Tae) Kim
+# Year: '22
+
 from Maze import Maze
 from time import sleep
 

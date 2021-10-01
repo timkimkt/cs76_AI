@@ -15,23 +15,25 @@ The A* search alogrithm works very simliar to the breadth-first search algorithm
 
 #### Design
 
-Although the action taken when we find a state that has not been visited and action taken when we find that a visited state can have a lower total cost, the conditions have been separated out to make the thought process more clear. As noted, 
+Although the action taken when we find a state that has not been visited and action taken when we find that a visited state can have a lower total cost, the conditions have been separated out to make the thought process more clear. As noted, we do not actually remove a repeated node with higher cost from the heap so the performance will be affected if the heap becomes too big. 
 
 ## MazeworldProblem (Multiple Robot)
 
 #### Modelling the problem
 
-#### Implementation
+The key to modelling the problem comes from deciding on the what the start and successive states will look like. Each state is represented by (robot\_to\_be\_moved, robot1\_coordinates, robot2\_coodinates, etc...). Thus, the starting state is simply initialized as the first robot (indexed from zero) and the starting location of the robot(s) in the maze. Then, the successors function will parse the state to update the robot to be moved next and add a state for every valid direction that it can move in. Note that if a robot is already in the goal location, it will stop moving and skip to the next robot. The goal test function simply checks if all the robots are in the predetermined goal locations.
 
-#### Design
+#### Implementation & Design
+
+Due to the use of tuples to represent each state, it was sometimes necessary to convert the tuple into a list to modify certain coordinates before converting them back into a tuple. While the manhatten heuristics decreases the number of nodes visited compared to the null heurisitc, it was actually much more effective to use the square of the manhatten heuristic (although it would not be considered admissible). 
 
 ## SensorlessProblem (Blind Robot)
 
 #### Modelling the problem
 
-#### Implementation
+Again, the key modelling the problem was to understanding how one might get from the starting state (all possible locations of the robot) to the goal state (one remaining possible location of robot). 
 
-#### Design
+#### Implementation & Design
 
 
 # Evaluation
