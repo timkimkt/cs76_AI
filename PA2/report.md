@@ -31,10 +31,11 @@ Due to the use of tuples to represent each state, it was sometimes necessary to 
 
 #### Modelling the problem
 
-Again, the key modelling the problem was to understanding how one might get from the starting state (all possible locations of the robot) to the goal state (one remaining possible location of robot). 
+Again, the key modelling the problem was to understanding how one might get from the starting state (all possible locations of the robot) to the goal state (one remaining possible location of robot). It is important to remember that the robot is 'blind', meaning it cannot tell if it has been moved to a particular direction or stayed in place due to a wall or an obstacle. For each state, there are going to be four successors (East, West, South, North) and we will keep the set of coordinates that are valid (i.e. floors). Since coorindates will be repeated and sets only keep one distinct element, we will be left with one remaining coordinate. 
 
 #### Implementation & Design
 
+The heuristic function in this case was simply the number of coordinates in the successor state since we would want to explore the path that would help us reduce the number of possible coordinates in the shortest time period. 
 
 # Evaluation
 
