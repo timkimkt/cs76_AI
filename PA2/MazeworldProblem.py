@@ -74,14 +74,6 @@ class MazeworldProblem:
         # increment 1 to get to next robot that needs to be moved
         robot_to_move = robot_moved + 1 if robot_moved + 1 < self.robot_count else 0
 
-        # unless we are at the goal state
-        if not self.goal_test(state):
-            # while the robot to be moved has already eached the goal state
-            while ((self.goal_locations[2*robot_to_move], self.goal_locations[2*robot_to_move+1])
-                   == robot_list[robot_to_move]):
-                # keep incrementing to the next robot, resetting to 0 if we are end
-                robot_to_move = robot_to_move + 1 if robot_to_move + 1 < self.robot_count else 0
-
         # for each of 5 possible directions
         for dx, dy in directions:
 

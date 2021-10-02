@@ -12,8 +12,23 @@ from astar_search import astar_search
 def null_heuristic(state):
     return 0
 
+
+## Test case #1: Maze 2
+test_maze2 = Maze("maze2.maz")
+test_mp = SensorlessProblem(test_maze2)
+print(test_mp.get_successors(test_mp.start_state))
+
+# Blind robot problem with A* Search using null_heuristic
+result = astar_search(test_mp, null_heuristic)
+print(result)
+
+# Blind robot problem with A* Search using blind_heuristic
+result = astar_search(test_mp, test_mp.blind_heuristic)
+print(result)
+test_mp.animate_path(result.path)  # animate path returned
+
 ########################
-## Test case #1: Maze 3
+## Test case #2: Maze 3
 test_maze3 = Maze("maze3.maz")
 test_mp = SensorlessProblem(test_maze3)
 print(test_mp.get_successors(test_mp.start_state))
@@ -28,7 +43,7 @@ print(result)
 test_mp.animate_path(result.path)  # animate path returned
 
 ########################
-## Test case #2: Maze 4
+## Test case #3: Maze 4
 #
 # test_maze4 = Maze("maze4.maz")
 # test_mp = SensorlessProblem(test_maze4)
@@ -45,7 +60,7 @@ test_mp.animate_path(result.path)  # animate path returned
 
 
 ########################
-## Test case #3: Maze 5
+# Test case #4: Maze 5
 #
 # test_maze5 = Maze("maze5.maz")
 # test_mp = SensorlessProblem(test_maze5)
@@ -62,7 +77,7 @@ test_mp.animate_path(result.path)  # animate path returned
 
 
 ########################
-# Test case #4: Maze 6
+# Test case #5: Maze 6
 #
 # test_maze6 = Maze("maze6.maz")
 # test_mp = SensorlessProblem(test_maze6)
@@ -76,3 +91,13 @@ test_mp.animate_path(result.path)  # animate path returned
 # result = astar_search(test_mp, test_mp.blind_heuristic)
 # print(result)
 # test_mp.animate_path(result.path)  # animate path returned
+
+###############################
+
+# Other mazes that can be explored
+# Note: they can take a long time
+
+test_maze7 = Maze("maze7.maz")
+test_maze8 = Maze("maze8.maz")
+
+#################################

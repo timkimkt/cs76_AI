@@ -60,6 +60,8 @@ class SensorlessProblem:
                 if (self.maze.is_floor(new_x, new_y)):
                     # add to the set
                     res.add((new_x, new_y))
+                else:
+                    res.add((x, y))
             # append all possible coordinates to successor
             successors.append(tuple(res))
         return successors
