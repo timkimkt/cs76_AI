@@ -12,7 +12,7 @@ from ChessGame import ChessGame
 from HumanPlayer import HumanPlayer
 
 import random
-
+import time
 
 class ChessGui:
     def __init__(self, player1, player2):
@@ -25,7 +25,6 @@ class ChessGui:
         self.svgWidget = QtSvg.QSvgWidget()
         self.svgWidget.setGeometry(50, 50, 400, 400)
         self.svgWidget.show()
-
 
     def start(self):
         self.timer = QTimer()
@@ -41,16 +40,16 @@ class ChessGui:
         svgbytes.append(svgboard)
         self.svgWidget.load(svgbytes)
 
-
     def make_move(self):
 
         print("making move, white turn " + str(self.game.board.turn))
-
-        self.game.make_move()
+        #print(self.game)
+        if not self.game.is_game_over():
+            self.game.make_move()
+        else:
+            print("game result: ", self.game.board.result())
+            self.timer.stop()  # Added this line to stop the timer and the call to make_move() so that the print will not be repeated over and over
         self.display_board()
-
-
-
 
 if __name__ == "__main__":
 
@@ -62,7 +61,10 @@ if __name__ == "__main__":
     #   with event loop.
 
     player1 = RandomAI()
-    player2 = RandomAI()
+    #player2 = RandomAI()
+    # call Minmax AI with max depth
+    player2 = MinimaxAI(2)
+
 
     game = ChessGame(player1, player2)
     gui = ChessGui(player1, player2)
@@ -70,3 +72,5 @@ if __name__ == "__main__":
     gui.start()
 
     sys.exit(gui.app.exec_())
+    ## Insert example with Minmax AI
+

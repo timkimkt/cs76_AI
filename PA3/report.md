@@ -15,6 +15,12 @@
 
 Discussion question: Vary maximum depth to get a feeling of the speed of the algorithm. Also, have the program print the number of calls it made to minimax as well as the maximum depth.  Record your observations in your document.
 
+Sample output at depth 1:
+
+Sample output at depth 2: 
+
+Sample output at depth 3: 
+
 Discussion question: Vary the allowed depth, and discuss in your document the results.
 
 Discussion question: Record your observations on move-reordering in your document.

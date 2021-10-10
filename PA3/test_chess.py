@@ -13,7 +13,8 @@ import sys
 
 
 player1 = HumanPlayer()
-player2 = RandomAI()
+#player2 = RandomAI()
+player2 = MinimaxAI()
 
 game = ChessGame(player1, player2)
 
