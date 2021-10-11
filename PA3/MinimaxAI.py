@@ -12,15 +12,26 @@ class MinimaxAI():
         self.initial_max = True
         self.last_max = True        # boolean for printing depth at last max
         self.last_min = True        # boolean for printing depth at last min
-    #.turn, .ischeckman
+
+        self.node_count = 0
+        self.utility_calls = 0
 
     def utility(self, board, depth):
-
 
         # material value heuristic for each piece
         piece_weights = {"p": 1, "n": 3, "b": 3, "r": 5, "q": 5, "k": 100000}
 
         utility = 0
+
+        # check for stalemate
+        if board.is_stalemate:
+            utility -= 50
+        # check for insufficient material
+        if board.is_insufficient_material:
+            utility -= 50
+        # check for fivefold repetition
+        if board.is_fivefold_repetition:
+            utility = -10000000
 
         # Add the utility of white pieces
         utility += piece_weights["p"] * len(board.pieces(chess.PAWN, chess.WHITE))
@@ -38,116 +49,77 @@ class MinimaxAI():
         utility -= piece_weights["q"] * len(board.pieces(chess.QUEEN, chess.BLACK))
         utility -= piece_weights["k"] * len(board.pieces(chess.KING, chess.BLACK))
 
+
         # add randomness to account for utility being same for all moves
         utility += random.random()
-
-        print("utility: ", utility)
         return utility
 
-        # piece_counts_p =  {"p": 0, "n": 0, "b": 0, "r": 0, "q": 0, "k": 0}
-        # piece_counts_o =  {"p": 0, "n": 0, "b": 0, "r": 0, "q": 0, "k": 0}
-
-        checkmate, checkmated = True, True
-
-        # scan the board
-        # for c in "abcdefgh":
-        #     for r in "12345678":
-        #         # find the piece at the board
-        #         piece = board.piece_at(chess.parse_square(str(c)+str(r)))
-        #         if piece:
-        #             piece = piece.symbol()
-        #             # add player's surviving pieces
-        #             #if piece.islower():
-        #             if piece.isupper():
-        #                 if piece == "K":
-        #                     checkmated = False
-        #                 piece_counts_p[piece.lower()] += 1
-        #                 #piece_counts_p[piece] += 1
-        #
-        #                 #utility += piece_weights[piece]
-        #             # subtract opponent's pieces
-        #             else:
-        #                 #utility -= piece_weights[piece.lower()]
-        #                 if piece == "k":
-        #                     checkmate = False
-        #                 piece_counts_o[piece] += 1
-        #                 #piece_counts_o[piece.lower()] += 1
-        #
-        # for k, v in piece_counts_p.items():
-        #     utility += piece_weights[k]*(v**2)
-        #
-        # for k, v in piece_counts_o.items():
-        #     utility -= piece_weights[k]*(v**2)
-
-
-
-        # print("utility val:", utility)
-        # # if there are equal number of both pieces, choose random float
-        # return (utility + random.random())
-
+    # cutoff test of min_value and max_value functions
     def cutoff_test(self, board, depth):
         if depth >= self.max_depth:
-            print("max depth")
             return True
         elif board.is_checkmate():
             return True
         elif board.is_stalemate():
-            print("stalemate")
             return True
         else:
             return False
 
     def max_value(self, board, depth):
 
-        # if self.initial_max:
-        #     print("max function at depth: ", depth)
-        #     self.initial_max = False
+        # Debugging: self.node_count += 1
+        # condition for print statements
+        if self.initial_max:
+            print("max function at depth: ", depth)
+            self.initial_max = False
 
-        # if we have reached maximum depth
-        #if board.is_game_over() or depth >= self.max_depth:
+        # check if condition for cutoff is met
         if self.cutoff_test(board, depth):
+            # print statement for depth
             if self.last_max and not self.initial_max:
-                #print("max function at depth: ", depth)
+                print("max function at depth: ", depth)
                 self.last_max = False
             # return utility of current state
             return self.utility(board, depth)
 
+        # push move and call min_value fn
         v = float('-inf')
         for move in board.legal_moves:
             board.push(move)
             v = max(v, self.min_value(board, depth + 1))
             board.pop()
 
-        if self.initial_max:
-            print("max function at depth: ", depth)
-            self.initial_max = False
+        # return utility value
         return v
 
     def min_value(self, board, depth):
 
-        # if self.initial_min:
-        #     print("min function at depth: ", depth)
-        #     self.initial_min = False
+        # Debugging: self.node_count += 1
 
-        # if we have reached maximum depth
-        #if board.is_game_over() or depth >= self.max_depth:
+        # condition for print statement
+        if self.initial_min:
+            print("min function at depth: ", depth)
+            self.initial_min = False
+
+        # check if condition for cutoff is met
         if self.cutoff_test(board, depth):
+            # print statement for depth
             if self.last_min and not self.initial_min:
-                #print("min function at depth: ", depth)
+                print("min function at depth: ", depth)
                 self.last_min = False
             # return utility of current state
             return self.utility(board, depth)
 
+
+        # push move and call min_value fn
         v = float('inf')
         for move in board.legal_moves:
             board.push(move)
             v = min(v, self.max_value(board, depth + 1))
             # initial_max = False
             board.pop()
-        if self.initial_min:
-            print("min function at depth: ", depth)
-            self.initial_min = False
 
+        # return utility
         return v
 
     def minmax(self, board):
@@ -159,7 +131,16 @@ class MinimaxAI():
         self.initial_min = True
         self.initial_max = True
 
+        utility_min = float('inf')
+
         for move in board.legal_moves:
+
+            # utility_move = self.max_value(board, 0)
+            # if utility_move <  utility_min:
+            #     utility_min = utility_move  # store max utility val
+            #     move_max = move
+
+            # push a move and call min_value fn
             board.push(move)
             # find out the utility of the move
             utility_move = self.min_value(board, 1)
@@ -175,9 +156,12 @@ class MinimaxAI():
         return move_max
 
     def choose_move(self, board):
+        # Debugging: self.node_count = 0
         moves = list(board.legal_moves)
         move = self.minmax(board)
-        sleep(1)   # I'm thinking so hard.
+        # Debugging: print("Node Count: ", self.node_count)
+
+        #sleep(0.0001)   # I'm thinking so hard.
         print("------------------------------------------")
         print("Minmax AI recommending move " + str(move))
         return move
