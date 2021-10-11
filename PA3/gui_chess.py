@@ -10,6 +10,8 @@ from RandomAI import RandomAI
 from MinimaxAI import MinimaxAI
 from ChessGame import ChessGame
 from HumanPlayer import HumanPlayer
+from AlphaBetaAI import AlphaBetaAI
+from IterativeAI import IterativeAI
 
 import random
 import time
@@ -60,11 +62,16 @@ if __name__ == "__main__":
     # to do: gui does not work well with HumanPlayer, due to input() use on stdin conflict
     #   with event loop.
 
-    player1 = RandomAI()
-    #player2 = RandomAI()
     # call Minmax AI with max depth
-    player2 = MinimaxAI(2)
+    #player1 = MinimaxAI(3)
 
+    # call Alphabeta AI with max depth
+    #player1 = AlphaBetaAI(3)
+
+    # call IterativeDeepening with maxdepth
+    player1 = IterativeAI()
+
+    player2 = RandomAI()
 
     game = ChessGame(player1, player2)
     gui = ChessGui(player1, player2)

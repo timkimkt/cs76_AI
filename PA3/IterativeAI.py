@@ -2,7 +2,7 @@ import chess
 from time import sleep
 import random
 
-class AlphaBetaAI():
+class IterativeAI():
     def __init__(self, max_depth=3):
         self.max_depth = max_depth  # maximum depth
         self.curr_depth = 0         # print out current depth
@@ -115,33 +115,40 @@ class AlphaBetaAI():
         print("Number of calls made to alphabeta fn: ", self.alphabeta_count)
 
         # variables for max utility and corresponding move
-        utility_max, move_max = float('-inf'), ""
+        utility_max, best_move = float('-inf'), ""
         self.initial_min = True
         self.initial_max = True
         # alpha, beta for pruning
         alpha, beta = float('-inf'), float('inf')
+        for d in range(self.max_depth):
 
-        for move in board.legal_moves:
-            # make the move
-            board.push(move)
-            # find out the utility of the move
-            utility_move = self.min_value(board, 1, alpha, beta)
-            # if it is greater than current maximum
-            if (utility_move > utility_max):
-                utility_max = utility_move  # store max utility val
-                move_max = move             # store corresponding move
-            # undo the move
-            board.pop()
+            for move in board.legal_moves:
+
+            ### Iterative Deepening ###
+
+                # make the move
+                board.push(move)
+
+                # find out the utility of the move
+                utility_move = self.min_value(board, d, alpha, beta)
+                # if it is greater than current maximum
+                if (utility_move > utility_max):
+                    utility_max = utility_move  # store max utility val
+                    best_move = move             # store corresponding move
+                # undo the move
+                board.pop()
+                # print the best move
+            print("The best move for depth ", d, "is ", move)
 
         # boolean for printing depth at last min/max
         self.last_min, self.last_max = True, True
         # return the move with max utility
-        return move_max
+        return best_move
 
     def choose_move(self, board):
         moves = list(board.legal_moves)
         move = self.alphabeta(board)
         sleep(1)   # I'm thinking so hard.
         print("------------------------------------------")
-        print("Alphabeta AI recommending move " + str(move))
+        print("Iterative AI recommending move " + str(move))
         return move
