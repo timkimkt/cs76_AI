@@ -1,9 +1,11 @@
 import chess
 from time import sleep
 import random
+import collections
 
 class AlphaBetaAI():
-    def __init__(self, max_depth=3):
+    def __init__(self, player, max_depth=3):
+        self.player = player
         self.max_depth = max_depth  # maximum depth
         self.curr_depth = 0         # print out current depth
         self.alphabeta_count = 0       # print out no. of calls
@@ -12,41 +14,47 @@ class AlphaBetaAI():
         self.initial_max = True
         self.last_max = True        # boolean for printing depth at last max
         self.last_min = True        # boolean for printing depth at last min
-    #.turn, .ischeckman
 
-    def utility(self, board, depth):
+
+        self.node_count = 0
+        self.utility_calls = 0
+
+    def utility(self, board):
 
         # material value heuristic for each piece
         piece_weights = {"p": 1, "n": 3, "b": 3, "r": 5, "q": 5, "k": 100000}
 
         utility = 0
 
+        # check for stalemate
+        if board.is_stalemate() or board.is_fivefold_repetition() or board.is_insufficient_material():
+            return 0
+
+        # check for fivefold repetition
+        if board.is_checkmate():
+            if self.player == board.turn:
+                return -100000
+            else:
+                return 100000
+
         # Add the utility of white pieces
-        utility += piece_weights["p"] * len(board.pieces(chess.PAWN, chess.WHITE))**2
-        utility += piece_weights["n"] * len(board.pieces(chess.KNIGHT, chess.WHITE))**2
-        utility += piece_weights["b"] * len(board.pieces(chess.BISHOP, chess.WHITE))**2
-        utility += piece_weights["r"] * len(board.pieces(chess.ROOK, chess.WHITE))**2
-        utility += piece_weights["q"] * len(board.pieces(chess.QUEEN, chess.WHITE))**2
-        utility += piece_weights["k"] * len(board.pieces(chess.KING, chess.WHITE))**2
+        utility += piece_weights["p"] * len(board.pieces(chess.PAWN, chess.WHITE))
+        utility += piece_weights["n"] * len(board.pieces(chess.KNIGHT, chess.WHITE))
+        utility += piece_weights["b"] * len(board.pieces(chess.BISHOP, chess.WHITE))
+        utility += piece_weights["r"] * len(board.pieces(chess.ROOK, chess.WHITE))
+        utility += piece_weights["q"] * len(board.pieces(chess.QUEEN, chess.WHITE))
+        utility += piece_weights["k"] * len(board.pieces(chess.KING, chess.WHITE))
 
         # subtract the utility of black pieces
-        utility -= piece_weights["p"] * len(board.pieces(chess.PAWN, chess.BLACK))**2
-        utility -= piece_weights["n"] * len(board.pieces(chess.KNIGHT, chess.BLACK))**2
-        utility -= piece_weights["b"] * len(board.pieces(chess.BISHOP, chess.BLACK))**2
-        utility -= piece_weights["r"] * len(board.pieces(chess.ROOK, chess.BLACK))**2
-        utility -= piece_weights["q"] * len(board.pieces(chess.QUEEN, chess.BLACK))**2
-        utility -= piece_weights["k"] * len(board.pieces(chess.KING, chess.BLACK))**2
+        utility -= piece_weights["p"] * len(board.pieces(chess.PAWN, chess.BLACK))
+        utility -= piece_weights["n"] * len(board.pieces(chess.KNIGHT, chess.BLACK))
+        utility -= piece_weights["b"] * len(board.pieces(chess.BISHOP, chess.BLACK))
+        utility -= piece_weights["r"] * len(board.pieces(chess.ROOK, chess.BLACK))
+        utility -= piece_weights["q"] * len(board.pieces(chess.QUEEN, chess.BLACK))
+        utility -= piece_weights["k"] * len(board.pieces(chess.KING, chess.BLACK))
 
         # add randomness to account for utility being same for all moves
-        utility += random.random()
-        if board.turn == chess.WHITE:
-            if board.is_checkmate:
-                return (utility - 50)/depth
-        else:
-            if board.is_checkmate:
-                return (utility + 50)/depth
-        print("utility: ", utility/depth)
-        return utility/depth
+        return utility if self.player else -utility
 
     def cutoff_test(self, board, depth):
         if depth >= self.max_depth:
@@ -60,55 +68,68 @@ class AlphaBetaAI():
 
     def max_value(self, board, depth, alpha, beta):
 
+        # Debugging: self.node_count += 1
+        # condition for print statements
         if self.initial_max:
             print("max function at depth: ", depth)
             self.initial_max = False
 
-        # if we have reached maximum depth
+        # check if condition for cutoff is met
         if self.cutoff_test(board, depth):
-            if self.last_max and self.initial_max:
+            # print statement for depth
+            if self.last_max and not self.initial_max:
                 print("max function at depth: ", depth)
                 self.last_max = False
             # return utility of current state
-            return self.utility(board, depth)
+            return self.utility(board)
 
+        # push move and call min_value fn
         v = float('-inf')
         for move in board.legal_moves:
             board.push(move)
             v = max(v, self.min_value(board, depth + 1, alpha, beta))
             if v >= beta:
-                board.pop()
+                # Debugging: print('beta reached')
+                board.pop()        # pop move before returning
                 return v
             alpha = max(alpha, v)
             board.pop()
 
+        # return utility value
         return v
 
     def min_value(self, board, depth, alpha, beta):
 
+        # Debugging: self.node_count += 1
+
+        # condition for print statement
         if self.initial_min:
             print("min function at depth: ", depth)
             self.initial_min = False
 
-        # if we have reached maximum depth
+        # check if condition for cutoff is met
         if self.cutoff_test(board, depth):
-            if self.last_min and self.initial_min:
+            # print statement for depth
+            if self.last_min and not self.initial_min:
                 print("min function at depth: ", depth)
                 self.last_min = False
             # return utility of current state
-            return self.utility(board, depth)
+            return self.utility(board)
 
+        # push move and call min_value fn
         v = float('inf')
         for move in board.legal_moves:
             board.push(move)
             v = min(v, self.max_value(board, depth + 1, alpha, beta))
             if v <= alpha:
-                board.pop()
+                # Debugging: print('alpha reached')
+                board.pop()        # pop move before returning
                 return v
             beta = min(beta, v)
             board.pop()
-
+        # return utility
         return v
+
 
     def alphabeta(self, board):
         self.alphabeta_count += 1
@@ -116,12 +137,28 @@ class AlphaBetaAI():
 
         # variables for max utility and corresponding move
         utility_max, move_max = float('-inf'), ""
-        self.initial_min = True
-        self.initial_max = True
+        self.initial_min, self.initial_max = True, True # booleans for printing
         # alpha, beta for pruning
         alpha, beta = float('-inf'), float('inf')
 
-        for move in board.legal_moves:
+        # reorder the moves
+        #moves_list =
+        utility_map = {}
+        for move in list(board.legal_moves):
+            board.push(move)
+            utility_map[move] = self.utility(board)
+            board.pop()
+        # sort by highest utility
+        sort_by_utility = sorted(utility_map.items(), key=lambda x: x[1], reverse=True)
+        sorted_legal_moves = [ ]
+        for item in sort_by_utility:
+            sorted_legal_moves.append(item[0])
+
+        # shuffle the moves to prevent repeated moves
+        random.shuffle(sorted_legal_moves)
+
+        #
+        for move in sorted_legal_moves:
             # make the move
             board.push(move)
             # find out the utility of the move
@@ -141,7 +178,7 @@ class AlphaBetaAI():
     def choose_move(self, board):
         moves = list(board.legal_moves)
         move = self.alphabeta(board)
-        sleep(1)   # I'm thinking so hard.
+        #sleep(1)   # I'm thinking so hard.
         print("------------------------------------------")
         print("Alphabeta AI recommending move " + str(move))
         return move

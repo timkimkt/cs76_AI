@@ -63,14 +63,15 @@ if __name__ == "__main__":
     #   with event loop.
 
     # call Minmax AI with max depth
-    #player1 = MinimaxAI(3)
 
     # call Alphabeta AI with max depth
     #player1 = AlphaBetaAI(3)
 
     # call IterativeDeepening with maxdepth
-    player1 = IterativeAI()
+    #player1 = IterativeAI()
 
+    #player1 = MinimaxAI(True, 2)
+    player1= AlphaBetaAI(True, 2)
     player2 = RandomAI()
 
     game = ChessGame(player1, player2)

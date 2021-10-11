@@ -3,7 +3,8 @@ from time import sleep
 import random
 
 class MinimaxAI():
-    def __init__(self, max_depth=3):
+    def __init__(self, player, max_depth=3):
+        self.player = player          # true if player 1
         self.max_depth = max_depth  # maximum depth
         self.curr_depth = 0         # print out current depth
         self.minmax_count = 0       # print out no. of calls
@@ -24,14 +25,15 @@ class MinimaxAI():
         utility = 0
 
         # check for stalemate
-        if board.is_stalemate:
-            utility -= 50
-        # check for insufficient material
-        if board.is_insufficient_material:
-            utility -= 50
+        if board.is_stalemate() or board.is_fivefold_repetition() or board.is_insufficient_material():
+            return 0
+
         # check for fivefold repetition
-        if board.is_fivefold_repetition:
-            utility = -10000000
+        if board.is_checkmate():
+            if self.player == board.turn:
+                return -100000
+            else:
+                return 100000
 
         # Add the utility of white pieces
         utility += piece_weights["p"] * len(board.pieces(chess.PAWN, chess.WHITE))
@@ -49,10 +51,8 @@ class MinimaxAI():
         utility -= piece_weights["q"] * len(board.pieces(chess.QUEEN, chess.BLACK))
         utility -= piece_weights["k"] * len(board.pieces(chess.KING, chess.BLACK))
 
-
         # add randomness to account for utility being same for all moves
-        utility += random.random()
-        return utility
+        return utility if self.player else -utility
 
     # cutoff test of min_value and max_value functions
     def cutoff_test(self, board, depth):
@@ -76,9 +76,9 @@ class MinimaxAI():
         # check if condition for cutoff is met
         if self.cutoff_test(board, depth):
             # print statement for depth
-            if self.last_max and not self.initial_max:
-                print("max function at depth: ", depth)
-                self.last_max = False
+            # if self.last_max and not self.initial_max:
+            #     print("max function at depth: ", depth)
+            #     self.last_max = False
             # return utility of current state
             return self.utility(board, depth)
 
@@ -104,9 +104,9 @@ class MinimaxAI():
         # check if condition for cutoff is met
         if self.cutoff_test(board, depth):
             # print statement for depth
-            if self.last_min and not self.initial_min:
-                print("min function at depth: ", depth)
-                self.last_min = False
+            # if self.last_min and not self.initial_min:
+            #     print("min function at depth: ", depth)
+            #     self.last_min = False
             # return utility of current state
             return self.utility(board, depth)
 
@@ -116,7 +116,6 @@ class MinimaxAI():
         for move in board.legal_moves:
             board.push(move)
             v = min(v, self.max_value(board, depth + 1))
-            # initial_max = False
             board.pop()
 
         # return utility
@@ -128,12 +127,12 @@ class MinimaxAI():
 
         # variables for max utility and corresponding move
         utility_max, move_max = float('-inf'), ""
-        self.initial_min = True
-        self.initial_max = True
+        self.initial_min, self.initial_max = True, True # booleans for printing
 
-        utility_min = float('inf')
-
-        for move in board.legal_moves:
+        # Debugging: utility_min = float('inf')
+        shuffled = list(board.legal_moves)
+        random.shuffle(shuffled)
+        for move in shuffled:
 
             # utility_move = self.max_value(board, 0)
             # if utility_move <  utility_min:
@@ -148,6 +147,7 @@ class MinimaxAI():
             if (utility_move > utility_max):
                 utility_max = utility_move  # store max utility val
                 move_max = move             # store corresponding move
+            # undo the move
             board.pop()
 
         # boolean for printing depth at last min/max
