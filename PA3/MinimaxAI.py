@@ -130,14 +130,10 @@ class MinimaxAI():
         self.initial_min, self.initial_max = True, True # booleans for printing
 
         # Debugging: utility_min = float('inf')
-        shuffled = list(board.legal_moves)
-        random.shuffle(shuffled)
-        for move in shuffled:
+        legal_moves = list(board.legal_moves)
+        random.shuffle(legal_moves)
 
-            # utility_move = self.max_value(board, 0)
-            # if utility_move <  utility_min:
-            #     utility_min = utility_move  # store max utility val
-            #     move_max = move
+        for move in legal_moves:
 
             # push a move and call min_value fn
             board.push(move)
@@ -152,6 +148,10 @@ class MinimaxAI():
 
         # boolean for printing depth at last min/max
         self.last_min, self.last_max = True, True
+
+        # Debugging (utility of move chosen)
+        print("Utility of move selected", utility_max)
+
         # return the move with max utility
         return move_max
 

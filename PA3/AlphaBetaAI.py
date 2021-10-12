@@ -15,7 +15,6 @@ class AlphaBetaAI():
         self.last_max = True        # boolean for printing depth at last max
         self.last_min = True        # boolean for printing depth at last min
 
-
         self.node_count = 0
         self.utility_calls = 0
 
@@ -52,6 +51,7 @@ class AlphaBetaAI():
         utility -= piece_weights["r"] * len(board.pieces(chess.ROOK, chess.BLACK))
         utility -= piece_weights["q"] * len(board.pieces(chess.QUEEN, chess.BLACK))
         utility -= piece_weights["k"] * len(board.pieces(chess.KING, chess.BLACK))
+
 
         # add randomness to account for utility being same for all moves
         return utility if self.player else -utility
@@ -141,24 +141,38 @@ class AlphaBetaAI():
         # alpha, beta for pruning
         alpha, beta = float('-inf'), float('inf')
 
-        # reorder the moves
-        #moves_list =
+        # turn legal_moves into list to shuffle
+        legal_moves = list(board.legal_moves)
+
+        # shuffle the moves to prevent repeated moves
+        random.shuffle(legal_moves)
+
+        # create a dictionary to store move, utility pairs
         utility_map = {}
+
+        # find utility of state after each possible move
         for move in list(board.legal_moves):
             board.push(move)
             utility_map[move] = self.utility(board)
             board.pop()
-        # sort by highest utility
+
+        # sort by utility and append into list
         sort_by_utility = sorted(utility_map.items(), key=lambda x: x[1], reverse=True)
         sorted_legal_moves = [ ]
         for item in sort_by_utility:
             sorted_legal_moves.append(item[0])
 
-        # shuffle the moves to prevent repeated moves
-        random.shuffle(sorted_legal_moves)
+        for item in sort_by_utility:
+            if utility_map[item[0]] == max(utility_map.values()):
+                sorted_legal_moves.append(item[0])
 
-        #
-        for move in sorted_legal_moves:
+        # print("map", sort_by_utility)
+        # print("legal moves", sorted_legal_moves)
+
+
+        for move in legal_moves:
+        # for all moves sorted by highest utility
+        #for move in sorted_legal_moves:
             # make the move
             board.push(move)
             # find out the utility of the move
@@ -172,6 +186,10 @@ class AlphaBetaAI():
 
         # boolean for printing depth at last min/max
         self.last_min, self.last_max = True, True
+
+        # Debugging (utility of move chosen)
+        print("Utility of move selected", utility_max)
+
         # return the move with max utility
         return move_max
 

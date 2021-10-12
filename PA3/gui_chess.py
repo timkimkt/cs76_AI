@@ -70,8 +70,8 @@ if __name__ == "__main__":
     # call IterativeDeepening with maxdepth
     #player1 = IterativeAI()
 
-    #player1 = MinimaxAI(True, 2)
-    player1= AlphaBetaAI(True, 2)
+    #player1 = MinimaxAI(True, 3)
+    player1= AlphaBetaAI(True, 3)
     player2 = RandomAI()
 
     game = ChessGame(player1, player2)
