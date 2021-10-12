@@ -68,7 +68,9 @@ class AlphaBetaAI():
 
     def max_value(self, board, depth, alpha, beta):
 
-        # Debugging: self.node_count += 1
+        # Debugging:
+        self.node_count += 1
+
         # condition for print statements
         if self.initial_max:
             print("max function at depth: ", depth)
@@ -100,7 +102,8 @@ class AlphaBetaAI():
 
     def min_value(self, board, depth, alpha, beta):
 
-        # Debugging: self.node_count += 1
+        # Debugging:
+        self.node_count += 1
 
         # condition for print statement
         if self.initial_min:
@@ -147,32 +150,34 @@ class AlphaBetaAI():
         # shuffle the moves to prevent repeated moves
         random.shuffle(legal_moves)
 
-        # create a dictionary to store move, utility pairs
-        utility_map = {}
 
-        # find utility of state after each possible move
-        for move in list(board.legal_moves):
-            board.push(move)
-            utility_map[move] = self.utility(board)
-            board.pop()
+        ##################################################
 
-        # sort by utility and append into list
-        sort_by_utility = sorted(utility_map.items(), key=lambda x: x[1], reverse=True)
-        sorted_legal_moves = [ ]
-        for item in sort_by_utility:
-            sorted_legal_moves.append(item[0])
+        # Uncomment below to enable node reordering
+        # Note: Line 180 has to be commented out
 
-        for item in sort_by_utility:
-            if utility_map[item[0]] == max(utility_map.values()):
-                sorted_legal_moves.append(item[0])
+        # # create a dictionary to store move, utility pairs
+        # utility_map = {}
+        #
+        # # find utility of state after each possible move
+        # for move in list(board.legal_moves):
+        #     board.push(move)
+        #     utility_map[move] = self.utility(board)
+        #     board.pop()
+        #
+        # # sort by utility and append into list
+        # sort_by_utility = sorted(utility_map.items(), key=lambda x: x[1], reverse=True)
+        #
+        # sorted_legal_moves = [ ]
+        # for item in sort_by_utility:
+        #     sorted_legal_moves.append(item[0])
+        #
+        # for move in sorted_legal_moves:
 
-        # print("map", sort_by_utility)
-        # print("legal moves", sorted_legal_moves)
+        #################################################
 
-
-        for move in legal_moves:
         # for all moves sorted by highest utility
-        #for move in sorted_legal_moves:
+        for move in legal_moves:
             # make the move
             board.push(move)
             # find out the utility of the move
@@ -196,6 +201,9 @@ class AlphaBetaAI():
     def choose_move(self, board):
         moves = list(board.legal_moves)
         move = self.alphabeta(board)
+        # Debugging:
+        print("Node Count: ", self.node_count)
+
         #sleep(1)   # I'm thinking so hard.
         print("------------------------------------------")
         print("Alphabeta AI recommending move " + str(move))

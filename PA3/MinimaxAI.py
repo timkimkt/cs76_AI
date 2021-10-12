@@ -17,7 +17,7 @@ class MinimaxAI():
         self.node_count = 0
         self.utility_calls = 0
 
-    def utility(self, board, depth):
+    def utility(self, board):
 
         # material value heuristic for each piece
         piece_weights = {"p": 1, "n": 3, "b": 3, "r": 5, "q": 5, "k": 100000}
@@ -67,7 +67,9 @@ class MinimaxAI():
 
     def max_value(self, board, depth):
 
-        # Debugging: self.node_count += 1
+        # Debugging:
+        self.node_count += 1
+
         # condition for print statements
         if self.initial_max:
             print("max function at depth: ", depth)
@@ -76,11 +78,11 @@ class MinimaxAI():
         # check if condition for cutoff is met
         if self.cutoff_test(board, depth):
             # print statement for depth
-            # if self.last_max and not self.initial_max:
-            #     print("max function at depth: ", depth)
-            #     self.last_max = False
+            if self.last_max and not self.initial_max:
+                print("max function at depth: ", depth)
+                self.last_max = False
             # return utility of current state
-            return self.utility(board, depth)
+            return self.utility(board)
 
         # push move and call min_value fn
         v = float('-inf')
@@ -94,7 +96,8 @@ class MinimaxAI():
 
     def min_value(self, board, depth):
 
-        # Debugging: self.node_count += 1
+        # Debugging:
+        self.node_count += 1
 
         # condition for print statement
         if self.initial_min:
@@ -104,11 +107,11 @@ class MinimaxAI():
         # check if condition for cutoff is met
         if self.cutoff_test(board, depth):
             # print statement for depth
-            # if self.last_min and not self.initial_min:
-            #     print("min function at depth: ", depth)
-            #     self.last_min = False
+            if self.last_min and not self.initial_min:
+                print("min function at depth: ", depth)
+                self.last_min = False
             # return utility of current state
-            return self.utility(board, depth)
+            return self.utility(board)
 
 
         # push move and call min_value fn
@@ -159,9 +162,10 @@ class MinimaxAI():
         # Debugging: self.node_count = 0
         moves = list(board.legal_moves)
         move = self.minmax(board)
-        # Debugging: print("Node Count: ", self.node_count)
+        # Debugging:
+        print("Node Count: ", self.node_count)
 
-        #sleep(0.0001)   # I'm thinking so hard.
+        #sleep(1)   # I'm thinking so hard.
         print("------------------------------------------")
         print("Minmax AI recommending move " + str(move))
         return move

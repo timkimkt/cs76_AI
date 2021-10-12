@@ -59,20 +59,17 @@ if __name__ == "__main__":
 
     #player_ronda = RandomAI()
 
-    # to do: gui does not work well with HumanPlayer, due to input() use on stdin conflict
-    #   with event loop.
 
-    # call Minmax AI with max depth
 
-    # call Alphabeta AI with max depth
-    #player1 = AlphaBetaAI(3)
-
-    # call IterativeDeepening with maxdepth
-    #player1 = IterativeAI()
-
+    # Uncomment player below to observe behavior
     #player1 = MinimaxAI(True, 3)
     player1= AlphaBetaAI(True, 3)
+    #player1 = IterativeAI(True, 4)
     player2 = RandomAI()
+
+    # AlphaBeta playing against each other
+    # player1= AlphaBetaAI(True, 3)
+    # player2= AlphaBetaAI(False, 3)
 
     game = ChessGame(player1, player2)
     gui = ChessGui(player1, player2)

@@ -11,10 +11,16 @@ from ChessGame import ChessGame
 
 import sys
 
+# Uncomment player below to observe behavior
+# player1 = MinimaxAI(True, 3)
+player1 = AlphaBetaAI(True, 3)
+# player1 = IterativeAI(True, 4)
+player2 = RandomAI()
 
-player1 = HumanPlayer()
-#player2 = RandomAI()
-player2 = MinimaxAI()
+# AlphaBeta playing against each other
+# player1= AlphaBetaAI(True, 3)
+# player2= AlphaBetaAI(False, 3)
+
 
 game = ChessGame(player1, player2)
 
