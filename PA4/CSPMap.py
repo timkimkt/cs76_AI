@@ -1,33 +1,25 @@
 class CSPMap():
     def __init__(self, variable, domain, map):
+
+        # initialize dictionaries
         self.var_to_region = {}
         self.var_to_domain = {}
 
+        # variables and domains are integers starting at 0
         self.variable = self.assign_var(variable)
         self.domain = self.assign_domain(domain)
 
+        # reversed var_to_domain for map_number
         self.var_to_region_rev = {v: k for k, v in self.var_to_region.items()}
-
-
         self.map_number = self.map_text_to_number(map)
 
+        # constraint mapping pair of integer (two regions) to pair of integer (two color)
         self.constraint = self.generate_constraint()
-        self.assignment = (-1,-1,-1,-1,-1,-1,-1) # default assignment
+        self.assignment = (-1,-1,-1,-1,-1,-1,-1)      # starting state
 
 
-    def map_text_to_number(self, map):
-
-        output = { }
-
-        for region in map.keys():
-            output[self.var_to_region_rev[region]] = []
-            for other in map[region]:
-                output[self.var_to_region_rev[region]].append(self.var_to_region_rev[other])
-
-        return output
-
+    # assigns variables to number from zero
     def assign_var(self, variable):
-        #self.var_to_region = { }
         variables = [ ]
 
         i = 0
@@ -38,6 +30,8 @@ class CSPMap():
 
         return variables
 
+    # assigns domains to number from zero
+    # -1 is unassigned (uncolored)
     def assign_domain(self, domain):
         domains = []
         self.var_to_domain[-1] = "Unassigned"
@@ -50,6 +44,21 @@ class CSPMap():
 
         return domains
 
+    # converts text map from user to map of numbers
+    # based on variable assignment
+    def map_text_to_number(self, map):
+
+        output = { }
+
+        for region in map.keys():
+            output[self.var_to_region_rev[region]] = []
+            for other in map[region]:
+                output[self.var_to_region_rev[region]].append(self.var_to_region_rev[other])
+
+        return output
+
+    # string method for printing
+    # converts integer values to respective string values
     def __str__(self):
         res = [ ]
 
@@ -63,30 +72,15 @@ class CSPMap():
         string = "Assignment:  " + str(res)
         return string
 
+    # generaate constraint map (pair of var to pair of domain)
     def generate_constraint(self):
 
-        # self.constraint
         output = { }
-        # assume variable is an array of integer
-        # for each pair of variables
-        # for key in self.map.keys():
-        #     for val in self.map[key]:
-        #         if (val, key) not in output:
-        #             # create a list to store constraints
-        #             output[(key, val)] = [ ]
-        #             # append possible pair of domain values
-        #             # switched pairs can also work
-        #             for m in range(1, len(self.domain)):
-        #                 for n in range(0, m):
-        #                     output[(key, val)].append((n, m))
-        #                     output[(key, val)].append((m, n))
-        #
-        # return output
 
-        # assume variable is an array of integer
-        #for each pair of variables
+        #for each variable pair
         for r1 in self.map_number:
             for r2 in self.map_number[r1]:
+                # avoid duplicates
                 if (r2, r1) not in output:
                     # create a list to store constraints
                     output[(r1, r2)] = [ ]
@@ -99,6 +93,7 @@ class CSPMap():
 
         return output
 
+    # check for recently assigned var if constraint is satisfied
     def constraint_satisfy(self, state, var):
 
         # for all neighbors of variable that has just been assigned
@@ -120,44 +115,30 @@ class CSPMap():
                         return False
 
         return True
-        # for i, v in enumerate(state):
-        #     # if variable assigned
-        #     if v != -1:
-        #         key = (self.var_to_region[var], self.var_to_region[v])
-        #         key_r = (self.var_to_region[v], self.var_to_region[var])
-        #
-        #         if key in self.constraint:
-        #             print("check if this works", key, self.var_to_domain[state[var]], self.var_to_domain[state[v]])
-        #             if (state[var], state[v]) not in self.constraint[key]:
-        #                 print('no!')
-        #                 return False
-        #             return True
-        #         elif key_r in self.constraint:
-        #             print("check if this works", key, self.var_to_domain[state[v]], self.var_to_domain[state[var]])
-        #
-        #             if (state[v], state[var]) not in self.constraint[key_r]:
-        #                 print('no!')
-        #
-        #                 return False
-        #             return True
-        # return True
 
     # state is being passed as a list
     def MRV_heuristic(self, state):
-        MRV, max_var = float('-inf'), 0
-        for i in range(len(self.assignment)):
-            if self.assignment[i] == -1:
-                rv = 0
-                for d in range(len(self.domain)):
-                    state[i] = d
-                    #print("exploring assignment", self.assignment)
 
+        # remaining values, associated variable
+        MRV, max_var = float('-inf'), 0
+
+        # for all unassigned variables
+        for i, v in enumerate(self.assignment):
+            if v == -1:
+                rv = 0
+                # try assigning possible domain values
+                for d in self.domain:
+                    state[i] = d
+                    # increment count if it is legal
                     if self.constraint_satisfy(state, i):
                         rv += 1
+                    # reset assignment
                     state[i] = -1
+                # if current count is greater than max
                 if rv > MRV:
-                    MRV = rv
-                    max_var = i
+                    # record MRV and variable
+                    MRV, max_var = rv, i
+
         return max_var
 
     # move this to constraintsatisfactionproblem
@@ -209,53 +190,11 @@ def main():
 
     map_csp = CSPMap(regions, colors, var_map)
 
-    print("assinging var", map_csp.assign_var(var_map))
-    print("Constraints generated: ", map_csp.constraint)
-    # #print("Number of constraints: ", len(map_csp.constraint))
-    #print(map_csp.var_to_region, map_csp.var_to_domain)
+    print(len(map_csp.constraint), "constraints generated: ", map_csp.constraint)
     print("Map to number", map_csp.map_number)
+    print("---------------------------------------------------------------------")
     print("backtrack: ", map_csp.backtrack())
-    print(map_csp)
+    print("Final output: ", map_csp)
 
 if __name__ == '__main__':
     main()
-
-    # var_to_region = {0: "WA", 1: "NT", 2: "Q", 3: "NSW", 4: "V", 5: "SA", 6: "T" } # pass this to print function
-
-    # # (index_altered, var1, var2, etc)
-    # def get_successors(self, next_var, state):
-    #
-    #     # list of successors
-    #     successors = [ ]
-    #     # state = list(state)
-    #     # curr_domain = state[0]
-    #
-    #     # # return empty list if out of variables
-    #     # if state[0] + 1 < len(self.variable):
-    #     #     next_var = state[0] + 1
-    #     # else:
-    #     #     # reached leaf node
-    #     #     return [ ]
-    #
-    #     new_state = [next_var] + state[1:]
-    #     for d in self.domain:
-    #         # add one since first element is next_var
-    #         new_state[next_var+1] = d
-    #         print('new state', new_state)
-    #
-    #         if self.constraint_satisfy(new_state):
-    #             successors.append(tuple(new_state))
-    #
-    #     return successors
-# state = list(state)
-# curr_var = state[0]
-#
-# for i in range(curr_var - 1, -1, -1):
-#
-#     # print("looking at", i, curr_var)
-#     # check if domain pair is in constraint for given variables
-#     if (state[i + 1], state[curr_var + 1]) not in self.constraint[(i, curr_var)]:
-#         # print("Not found: ", (state[i+1], state[curr_var+1]))
-#         return False
-#
-# return True
