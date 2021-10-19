@@ -3,7 +3,7 @@ class ConstraintSatisfactionProblem():
         self.variable = variable
         self.domain = domain
         self.constraint = self.generate_constraint()
-        self.assignment = { }
+        self.assignment = [-1, -1, -1]
 
 
     def generate_constraint(self):
@@ -30,32 +30,31 @@ class ConstraintSatisfactionProblem():
 
         #state = list(state)
         curr_var = state[0]
-        # for v in range(curr_var, len(self.variable)):
 
         for i in range(curr_var-1, -1, -1):
 
-            print("looking at", i, curr_var)
+            # print("looking at", i, curr_var)
             # check if domain pair is in constraint for given variables
             if (state[i+1], state[curr_var+1]) not in self.constraint[(i, curr_var)]:
-                print("Not found: ", (state[i+1], state[curr_var+1]))
+                # print("Not found: ", (state[i+1], state[curr_var+1]))
                 return False
 
         return True
 
     # (index_altered, var1, var2, etc)
-    def get_successors(self, state):
+    def get_successors(self, next_var, state):
 
         # list of successors
         successors = [ ]
-        state = list(state)
-        curr_domain = state[0]
+        # state = list(state)
+        # curr_domain = state[0]
 
-        # return empty list if out of variables
-        if state[0] + 1 < len(self.variable):
-            next_var = state[0] + 1
-        else:
-            # reached leaf node
-            return [ ]
+        # # return empty list if out of variables
+        # if state[0] + 1 < len(self.variable):
+        #     next_var = state[0] + 1
+        # else:
+        #     # reached leaf node
+        #     return [ ]
 
         new_state = [next_var] + state[1:]
         for d in self.domain:
@@ -68,12 +67,34 @@ class ConstraintSatisfactionProblem():
 
         return successors
 
+    def MRV_heuristic(self, ):
+        MRV = 0
+        for i in range(len(self.assignment)):
+            if self.assignment[i] == -1:
+
+
+    def backtrack(self):
+
+        # check if all the variables have been assigned
+        if -1 not in self.assignment:
+            return self.assignment
+
+        # unassigned var
+        next_var = 0
+
+        for value in self.get_successors:
+            self.assignment[self.state[0]] = value
+
+
+
 def main():
     csp_problem = ConstraintSatisfactionProblem([0, 1, 2], [0, 1, 2])
     print("Constraints generated: ", csp_problem.constraint)
     print("Number of constraints: ", len(csp_problem.constraint))
     print("Successor generated: ", csp_problem.get_successors((0, 1, 0, 0)))
 
+    ###
+    csp_problem.backtrack()
 
 if __name__ == '__main__':
     main()
