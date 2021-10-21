@@ -148,7 +148,7 @@ class CSPMap():
                 elif (neigh, var) in self.constraint:
                     # return false if assignment does not exist in constraint
                     if (state[neigh], state[var]) not in self.constraint[(neigh, var)]:
-                        print("False2", state[neigh], state[var], self.constraint[(neigh, var)])
+                        #print("False2", state[neigh], state[var], self.constraint[(neigh, var)])
 
                         return False
 

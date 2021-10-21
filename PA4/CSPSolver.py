@@ -12,14 +12,13 @@ class CSPSolver():
         self.i = -1
 
     # state is being passed as a list
-    def MRV_heuristic(self, state):
+    def MRV_heuristic(self, state, degree_on=False):
 
         # remaining values, associated variable
         MRV, min_var = float('inf'), 0
         # for all unassigned variables
         for i, v in enumerate(self.problem.assignment):
-            ## if v == -1:
-            # if v is None:
+
             if self.problem.unassigned(v):
                 rv = 0
                 # try assigning possible domain values
@@ -29,22 +28,67 @@ class CSPSolver():
                     if self.problem.constraint_satisfy(state, i):
                         rv += 1
                     # reset assignment
-                    #state[i] = -1
                     state[i] = self.problem.domain[-1]
                 # if current count is greater than max
                 if rv < MRV:
                     # record MRV and variable
                     MRV, min_var = rv, i
 
+
+
         return min_var
+
+    def degree_heuristic(self):
+
+        pass
+
+    # pick domain that rules out the fewest values in remaining values
+    def LCV_heuristic(self, unassigned_var):
+
+        LCV_domain = {}
+
+        # try assign domain for unassigned var
+        for d1 in self.problem.domain[unassigned_var]:
+            illegal_count = 0
+
+            self.problem.assignment[unassigned_var] = d1
+
+            for i, v in enumerate(self.problem.assignment):
+
+                # for unassigned variables
+                if self.problem.unassigned(v):
+                    for d2 in self.problem.domain[i]:
+                        # assign value to variable
+                        self.problem.assignment[i] = d2
+
+                        # count legal domain for remaining variables
+                        # increment count if it is legal
+                        if not self.problem.constraint_satisfy(self.problem.assignment, i):
+                            illegal_count += 1
+                        # reset assignment
+                        self.problem.assignment[i] = self.problem.domain[-1]
+
+            self.problem.assignment[unassigned_var] = self.problem.domain[-1]
+            #print("adding, ", d1, "to LCV")
+            LCV_domain[d1] = illegal_count
+
+        #print("DICT", LCV_domain)
+        sorted_domain = [k for k, v in sorted(LCV_domain.items(), key=lambda i: i[1])]
+        #print("sorted domain", sorted_domain)
+        return sorted_domain
+
+
+    def no_heuristic(self):
+        self.i += 1
+        return self.i if self.i < len(self.problem.assignment) else 0
 
     def AC_3(self):
         q = deque()
-        #print("Q", q)
-        #self.problem.constraint.keys()
+
         for k in self.problem.constraint.keys():
             q.append(k)
             q.append((k[1],k[0]))
+
         while q:
             v1, v2 = q.popleft()
             #print("popped", (v1, v2))
@@ -54,6 +98,7 @@ class CSPSolver():
                 for neigh in self.problem.map_number[v1]:
                     if neigh != v2:
                         q.append((neigh, v1))
+
         return True
 
     def revise(self, v1, v2):
@@ -88,41 +133,34 @@ class CSPSolver():
             print('revised! ')
         return revised
 
-    def no_heuristic(self):
-        self.i += 1
-        return self.i if self.i < len(self.problem.assignment) else 0
 
-    # move this to constraintsatisfactionproblem
+
     def backtrack(self):
 
         self.problem.assignment = list(self.problem.assignment)
         #print("BackTrack: ", self.problem)
 
         # check if all the variables have been assigned
-        #for a in self.problem.assignment:
-        print("p", self.problem.assignment)
-        #if None not in self.problem.assignment:
         if self.problem.assignment_complete():
             print("complete", self.problem.assignment)
             return tuple(self.problem.assignment)
 
-        # if self.problem.assignment_complete():
-        #     return tuple(self.problem.assignment)
-
-        #if self.mrv:
+        # uncomment each heurisitc
         unassigned_var = self.MRV_heuristic(self.problem.assignment)
         #unassigned_var = self.no_heuristic()
-        #print("uassigned MRV", unassigned_var)
+        #print("Selecting unassigned..: ", unassigned_var)
 
-        #MOD: DM
-        for d in self.problem.domain[unassigned_var]:
-        ## for d in self.problem.domain:
+        # sort according to LCV (unassigned var )
+        domain = self.LCV_heuristic(unassigned_var)
+
+
+        for d in domain:
+
             # assign value to variable
             self.problem.assignment[unassigned_var] = d
             #print("assigning", d, self.problem.assignment)
 
-
-            # new assignment saitsfy constraint
+            # new assignment satisfy constraint
             if self.problem.constraint_satisfy(self.problem.assignment, unassigned_var):
                 print("constraint satisfy")
 
@@ -130,17 +168,13 @@ class CSPSolver():
                 self.AC_3()
 
                 result = self.backtrack()
-                #if result is not None:
                 if result:
                     return result
 
             # reset variable value
             else:
-                ## self.problem.assignment[unassigned_var] = -1
                 print("not satisfy")
-
-
-                #self.problem.assignment[unassigned_var] = None
+                # undo assignment
                 self.problem.assignment[unassigned_var] = self.problem.domain[-1]
 
         #print('return false')
