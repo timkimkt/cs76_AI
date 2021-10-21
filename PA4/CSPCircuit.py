@@ -149,52 +149,6 @@ class CSPCircuit():
                 for y in range(r2_y, r2_y + height_r2):
                     if y in range(r1_y, r1_y + height_r1):
                         return True
-            #return False
-
-        # # on the left
-        # if r2_x + width_r2 in range(r1_x, r1_x + width_r1):
-        #     # top or bottom
-        #     for y in range(r2_y, r2_y + height_r2):
-        #         if y in range(r1_y, r1_y + height_r1):
-        #             return True
-            #
-            # if (r2_y) in range(r1_y, r1_y + height_r1) or r2_y + height_r2 in range(r1_y, r1_y + height_r1):
-            #     return True
-            #return False
-
-
-
-        # # on the right
-        # if r2_x in range(r1_x, r1_x + width_r1):
-        #     # top or bottom
-        #     # if (height_r2 == 1):
-        #         #print("debug", r2_y, (r1_y, r1_y + height_r1))
-        #     if (r2_y) in range(r1_y, r1_y + height_r1) or r2_y + height_r2 in range(r1_y, r1_y + height_r1):
-        #
-        #         return True
-        #     #return False
-        #
-        # # on the left
-        # if r2_x + width_r2 in range(r1_x, r1_x + width_r1):
-        #     # top or bottom
-        #     if (r2_y) in range(r1_y, r1_y + height_r1) or r2_y + height_r2 in range(r1_y, r1_y + height_r1):
-        #         return True
-        #     #return False
-
-        # if r1_x in range(r2_x, r2_x + width_r2):
-        #     # top or bottom
-        #     # if (height_r2 == 1):
-        #         #print("debug", r2_y, (r1_y, r1_y + height_r1))
-        #     if (r1_y) in range(r2_y, r2_y + height_r2) or r1_y + height_r1 in range(r2_y, r2_y + height_r2):
-        #
-        #         return True
-        #     #return False
-        #
-        # # on the left
-        # if r1_x + width_r1 in range(r2_x, r2_x + width_r2):
-        #     # top or bottom
-        #     if (r1_y) in range(r2_y, r2_y + height_r2) or r1_y + height_r1 in range(r2_y, r2_y + height_r2):
-        #         return True
 
         return False
 
@@ -240,35 +194,6 @@ class CSPCircuit():
 
         return True
 
-    # # check for recently assigned var if constraint is satisfied
-    # def constraint_satisfy(self, assignment, var):
-    #     for i, v in enumerate(self.variable):
-    #         if i != var and v != (-1, -1):
-    #             if not self.board_legal(assignment[0], assignment[1]):
-    #                 return False
-    #     return True
-                #pass
-
-        # # for all neighbors of variable that has just been assigned
-        # for neigh in self.map_number[var]:
-        #     # Debug: print('neig', self.var_to_region[neigh])
-        #     # skip if neighbor has not been assigne/d
-        #     if state[neigh] != -1:
-        #
-        #         # check both pairs in the constraint
-        #
-        #         if (var, neigh) in self.constraint:
-        #             # return false if assignment does not exist in constraint
-        #             if (state[var], state[neigh]) not in self.constraint[(var, neigh)]:
-        #                 return False
-        #
-        #         elif (neigh, var) in self.constraint:
-        #             # return false if assignment does not exist in constraint
-        #             if (state[neigh], state[var]) not in self.constraint[(neigh, var)]:
-        #                 return False
-        #
-        # return True
-
     def assignment_complete(self):
         return (-1, -1) not in self.assignment
         #return all(item is None for item in self.assignment)
@@ -301,6 +226,7 @@ def main():
     csp_solution = CSPSolver(csp_circuit)
     print("backtrack: ", csp_solution.backtrack())
     print("Final output: ", csp_circuit)
+
 
 if __name__ == '__main__':
     main()
