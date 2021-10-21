@@ -21,6 +21,7 @@ class CSPMap():
         self.constraint = self.generate_constraint()
         self.assignment = (-1,-1,-1,-1,-1,-1,-1)      # starting state
         #self.assignment = (None, None, None, None, None, None, None)      # starting state
+        print("variables, ", self.map_number)
 
         print("variables, ", self.variable)
         print("domains, ", self.domain)

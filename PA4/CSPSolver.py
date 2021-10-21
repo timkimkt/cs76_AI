@@ -38,9 +38,27 @@ class CSPSolver():
 
         return min_var
 
-    def degree_heuristic(self):
+    def Degree_heuristic(self, state):
 
-        pass
+        assigned = [ ]
+        max_const, max_var = float('-inf'), 0
+
+        #for i, v in enumerate(self.problem.assignment):
+        for i, v in enumerate(state):
+
+            if not self.problem.unassigned(v):
+                assigned.append(i)
+
+
+        #for i, v in enumerate(self.problem.assignment):
+        for i, v in enumerate(state):
+
+            if self.problem.unassigned(v):
+                subtracted = [c for c in self.problem.map_number[i] if c not in assigned]
+                if len(subtracted) > max_const:
+                    max_const, max_var = len(subtracted), i
+
+        return max_var
 
     # pick domain that rules out the fewest values in remaining values
     def LCV_heuristic(self, unassigned_var):
@@ -146,14 +164,15 @@ class CSPSolver():
             return tuple(self.problem.assignment)
 
         # uncomment each heurisitc
-        unassigned_var = self.MRV_heuristic(self.problem.assignment)
+        #unassigned_var = self.MRV_heuristic(self.problem.assignment)
+        unassigned_var = self.Degree_heuristic(self.problem.assignment)
         #unassigned_var = self.no_heuristic()
         #print("Selecting unassigned..: ", unassigned_var)
 
         # sort according to LCV (unassigned var )
         domain = self.LCV_heuristic(unassigned_var)
 
-
+        #for d in self.problem.domain[unassigned_var]:
         for d in domain:
 
             # assign value to variable

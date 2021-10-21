@@ -212,7 +212,7 @@ def main():
     A = np.reshape([['a']*6], (2,3))
     B = np.reshape([['b']*10], (2,5))
     C = np.reshape([['c']*6], (3,2))
-    E = np.reshape([['e']*6], (1,6))
+    E = np.reshape([['e']*7], (1,7))
     components = ["A", "B", "C", "E"]
     components_map = {"A": A, "B": B, "C": C, "E": E}
     print("Here are the components: \n", A, "\n", B, "\n", C, "\n", E)
