@@ -12,10 +12,12 @@ class CSPSolver():
         self.i = -1
 
     # state is being passed as a list
-    def MRV_heuristic(self, state, degree_on=False):
+    def MRV_heuristic(self, state, tiebreak=False):
 
         # remaining values, associated variable
         MRV, min_var = float('inf'), 0
+        tied = [ ]
+
         # for all unassigned variables
         for i, v in enumerate(self.problem.assignment):
 
@@ -30,11 +32,27 @@ class CSPSolver():
                     # reset assignment
                     state[i] = self.problem.domain[-1]
                 # if current count is greater than max
-                if rv < MRV:
+                if tiebreak and rv == MRV:
+                    tied.append(i)
+
+                elif rv < MRV:
                     # record MRV and variable
                     MRV, min_var = rv, i
+                    #print("tied: ", tied)
+                    if tiebreak:
+                        tied = [ ]
+                        tied.append(i)
 
+        print("tied: ", tied)
+        if tiebreak and len(tied) > 1:
+            for i in tied:
+                max_var = float('-inf')
+                for d in self.problem.domain:
+                    state[i] = d
+                    max_var = max(self.Degree_heuristic(state), max_var)
+                    state[i] = self.problem.domain[-1]
 
+                return max_var
 
         return min_var
 
@@ -43,14 +61,11 @@ class CSPSolver():
         assigned = [ ]
         max_const, max_var = float('-inf'), 0
 
-        #for i, v in enumerate(self.problem.assignment):
         for i, v in enumerate(state):
 
             if not self.problem.unassigned(v):
                 assigned.append(i)
 
-
-        #for i, v in enumerate(self.problem.assignment):
         for i, v in enumerate(state):
 
             if self.problem.unassigned(v):
@@ -164,8 +179,8 @@ class CSPSolver():
             return tuple(self.problem.assignment)
 
         # uncomment each heurisitc
-        #unassigned_var = self.MRV_heuristic(self.problem.assignment)
-        unassigned_var = self.Degree_heuristic(self.problem.assignment)
+        unassigned_var = self.MRV_heuristic(self.problem.assignment, True)
+        #unassigned_var = self.Degree_heuristic(self.problem.assignment)
         #unassigned_var = self.no_heuristic()
         #print("Selecting unassigned..: ", unassigned_var)
 
