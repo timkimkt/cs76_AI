@@ -20,12 +20,6 @@ class CSPMap():
         # constraint mapping pair of integer (two regions) to pair of integer (two color)
         self.constraint = self.generate_constraint()
         self.assignment = (-1,-1,-1,-1,-1,-1,-1)      # starting state
-        #self.assignment = (None, None, None, None, None, None, None)      # starting state
-        print("variables, ", self.map_number)
-
-        print("variables, ", self.variable)
-        print("domains, ", self.domain)
-        print("domains2, ", self.var_to_domain)
 
     # assigns variables to number from zero
     def assign_var(self, variable):
@@ -171,80 +165,48 @@ def main():
     var_map = {"WA": ["NT", "SA"], "NT": ["WA", "SA", "Q"], "Q": ["NT", "SA", "NSW"],
                "NSW": ["Q", "SA", "V"], "V": ["NSW", "SA"], "SA": ["WA", "NT", "Q", "NSW", "V"], "T": []}
 
+    # map_csp = CSPMap(regions, colors, var_map)
+    # csp_solution = CSPSolver(map_csp)
+    # print(len(map_csp.constraint), "constraints generated: ", map_csp.constraint)
+    # print("Map to number", map_csp.map_number)
+
+
+    # map_csp = CSPMap(regions, colors, var_map)
+    # csp_solution = CSPSolver(map_csp)
+    # print("Backtrack: ", csp_solution.backtrack())
+    # print("Final output: ", map_csp)
+
+    print("---------------------------------------------------------------------")
+    # backtrack(MRV, Degree, LCV, Tiebreak=False):
     map_csp = CSPMap(regions, colors, var_map)
     csp_solution = CSPSolver(map_csp)
+    print("Backtrack: ", csp_solution.backtrack(True, False, False))
+    print("Final output: ", map_csp)
 
-    print(len(map_csp.constraint), "constraints generated: ", map_csp.constraint)
-    print("Map to number", map_csp.map_number)
     print("---------------------------------------------------------------------")
-    print("backtrack: ", csp_solution.backtrack())
+    # backtrack(MRV, Degree, LCV, Tiebreak=False):
+    map_csp = CSPMap(regions, colors, var_map)
+    csp_solution = CSPSolver(map_csp)
+    print("Backtrack: ", csp_solution.backtrack(True, False, False, True))
+    print("Final output: ", map_csp)
+
+    print("---------------------------------------------------------------------")
+    map_csp = CSPMap(regions, colors, var_map)
+    csp_solution = CSPSolver(map_csp)
+    print("Backtrack: ", csp_solution.backtrack(False, True, False))
+    print("Final output: ", map_csp)
+
+    print("---------------------------------------------------------------------")
+    map_csp = CSPMap(regions, colors, var_map)
+    csp_solution = CSPSolver(map_csp)
+    print("Backtrack: ", csp_solution.backtrack(False, False, True))
+    print("Final output: ", map_csp)
+
+    print("---------------------------------------------------------------------")
+    map_csp = CSPMap(regions, colors, var_map)
+    csp_solution = CSPSolver(map_csp)
+    print("Backtrack: ", csp_solution.backtrack(False, False, False))
     print("Final output: ", map_csp)
 
 if __name__ == '__main__':
     main()
-
-    # # state is being passed as a list
-    # def MRV_heuristic(self, state):
-    #
-    #     # remaining values, associated variable
-    #     MRV, max_var = float('-inf'), 0
-    #
-    #     # for all unassigned variables
-    #     for i, v in enumerate(self.assignment):
-    #         if v == -1:
-    #             rv = 0
-    #             # try assigning possible domain values
-    #             for d in self.domain:
-    #                 state[i] = d
-    #                 # increment count if it is legal
-    #                 if self.constraint_satisfy(state, i):
-    #                     rv += 1
-    #                 # reset assignment
-    #                 state[i] = -1
-    #             # if current count is greater than max
-    #             if rv > MRV:
-    #                 # record MRV and variable
-    #                 MRV, max_var = rv, i
-    #
-    #     return max_var
-    #
-    # # move this to constraintsatisfactionproblem
-    # def backtrack(self):
-    #
-    #     self.assignment = list(self.assignment)
-    #     print("BackTrack: ", self)
-    #
-    #     # check if all the variables have been assigned
-    #     if -1 not in self.assignment:
-    #         return tuple(self.assignment)
-    #
-    #     # unassigned var
-    #     unassigned_var = self.MRV_heuristic(self.assignment)
-    #     print("uassigned MRV", unassigned_var)
-    #
-    #
-    #     for d in self.domain:
-    #         # assign value to variable
-    #         self.assignment[unassigned_var] = d
-    #         #print("assigning d", self.assignment)
-    #
-    #
-    #         # new assignment saitsfy constraint
-    #         if self.constraint_satisfy(self.assignment, unassigned_var):
-    #             #print("constraint satisfy")
-    #
-    #             # inference
-    #
-    #             result = self.backtrack()
-    #             if not result:
-    #                 #print('return result')
-    #                 return result
-    #
-    #         # reset variable value
-    #         else:
-    #             self.assignment[unassigned_var] = -1
-    #
-    #     #print('return false')
-    #     return False
-
-

@@ -10,6 +10,7 @@ class CSPCircuit():
         #self.var_to_domain = {}           # size (width, height)
 
         # board dimensions
+        self.board = board
         self.board_size = [len(board[0]), len(board)]  # width and height (m & n)
         self.board_width, self.board_height = len(board[0]), len(board)
 
@@ -38,11 +39,14 @@ class CSPCircuit():
         # constraint mapping pair of integer (two regions) to pair of integer (two color)
         self.constraint = self.generate_constraint()
 
-        print(self.domain)
+        #print(self.domain)
+        print("domain: ")
+        for k in self.domain.keys():
+            print("Domain of ", k, "is ", self.domain[k])
         print("constraint: ")
         for k in self.constraint.keys():
-            print("key: ", k, "value: ", self.constraint[k])
-        print(self.component_size)
+            print("Constraint between:", self.var_to_component[k[0]].upper(), "and", self.var_to_component[k[1]].upper(), "is: ", self.constraint[k])
+        print(self.var_to_component)
 
     def board_legal(self, x, y):
         if (x not in range(0, self.board_width)
@@ -208,7 +212,42 @@ class CSPCircuit():
         string = "Assignment:  " + str(self.assignment)
         return string
 
+    def print_completed_board(self):
+        for i, p in enumerate(self.assignment):
+            #print(p)
+            r, c = len(self.board)-1 - p[1], p[0]
+            # self.board[r][c] = self.var_to_component[i].lower()
+
+            # print(r, c)
+            for y in range(r, r - self.component_size[i][1], -1):
+                for x in range(c, c + self.component_size[i][0]):
+                    self.board[y][x] = self.var_to_component[i].lower()
+
+
+            # for y in range(p[0], p[0] + self.component_size[i][1]):
+            #     for x in range(p[1], p[1] + self.component_size[i][0]):
+            #         # print(x, len(self.board[0])-y,)
+            #         # self.board[x][len(self.board[0])-y] = self.var_to_component[i].lower()
+            #
+            #         self.board[len(self.board[0])-y][x] = self.var_to_component[i].lower()
+        print(self.board)
+
+
 def main():
+
+    # A = np.reshape([['a']*8], (2,4))
+    # B = np.reshape([['b']*20], (4,5))
+    # C = np.reshape([['c']*10], (2,5))
+    # E = np.reshape([['e']*10], (1,10))
+    # components = ["A", "B", "C", "E"]
+    # components_map = {"A": A, "B": B, "C": C, "E": E}
+    # print("Here are the components: \n", A, "\n", B, "\n", C, "\n", E)
+    # board = np.reshape([["."]*100], (10, 10))
+    # print("Here is the circuit: \n", board)
+    # print("---------------------------------------------------------------------")
+    # print("---------------------------------------------------------------------")
+
+    #################################
     A = np.reshape([['a']*6], (2,3))
     B = np.reshape([['b']*10], (2,5))
     C = np.reshape([['c']*6], (3,2))
@@ -216,17 +255,71 @@ def main():
     components = ["A", "B", "C", "E"]
     components_map = {"A": A, "B": B, "C": C, "E": E}
     print("Here are the components: \n", A, "\n", B, "\n", C, "\n", E)
-
     board = np.reshape([["."]*30], (3, 10))
     print("Here is the circuit: \n", board)
     print("---------------------------------------------------------------------")
-    # print("Final output: ", map_csp)
+    print("---------------------------------------------------------------------")
+    #################################
 
+    # print("Final output: ", map_csp)
+    #
+    # csp_circuit = CSPCircuit(components, board, components_map)
+    # csp_solution = CSPSolver(csp_circuit)
+    # print("backtrack: ", csp_solution.backtrack())
+    # print("Final output: ", csp_circuit)
+
+
+
+
+    # print("---------------------------------------------------------------------")
+    # # backtrack(MRV, Degree, LCV, Tiebreak=False):
+    # csp_circuit = CSPCircuit(components, board, components_map)
+    # csp_solution = CSPSolver(csp_circuit)
+    # print("Backtrack: ", csp_solution.backtrack(True, False, False))
+    # print("Final output: ", csp_circuit)
+    #
+    # print("---------------------------------------------------------------------")
+    # # backtrack(MRV, Degree, LCV, Tiebreak=False):
+    # csp_circuit = CSPCircuit(components, board, components_map)
+    # csp_solution = CSPSolver(csp_circuit)
+    # print("Backtrack: ", csp_solution.backtrack(True, False, False, True))
+    # print("Final output: ", csp_circuit)
+    #
+    # print("---------------------------------------------------------------------")
+    # # backtrack(MRV, Degree, LCV, Tiebreak=False):
+    # csp_circuit = CSPCircuit(components, board, components_map)
+    # csp_solution = CSPSolver(csp_circuit)
+    # print("Backtrack: ", csp_solution.backtrack(False, True, False))
+    # print("Final output: ", csp_circuit)
+    #
+    # print("---------------------------------------------------------------------")
+    # # backtrack(MRV, Degree, LCV, Tiebreak=False):
+    # csp_circuit = CSPCircuit(components, board, components_map)
+    # csp_solution = CSPSolver(csp_circuit)
+    # print("Backtrack: ", csp_solution.backtrack(False, False, True))
+    # print("Final output: ", csp_circuit)
+    #
+    # print("---------------------------------------------------------------------")
+    # # backtrack(MRV, Degree, LCV, Tiebreak=False):
+    # csp_circuit = CSPCircuit(components, board, components_map)
+    # csp_solution = CSPSolver(csp_circuit)
+    # print("Backtrack: ", csp_solution.backtrack(True, False, True))
+    # print("Final output: ", csp_circuit)
+    #
+    # print("---------------------------------------------------------------------")
+    # # backtrack(MRV, Degree, LCV, Tiebreak=False):
+    # csp_circuit = CSPCircuit(components, board, components_map)
+    # csp_solution = CSPSolver(csp_circuit)
+    # print("Backtrack: ", csp_solution.backtrack(False, True, True))
+    # print("Final output: ", csp_circuit)
+
+    print("---------------------------------------------------------------------")
+    # backtrack(MRV, Degree, LCV, Tiebreak=False):
     csp_circuit = CSPCircuit(components, board, components_map)
     csp_solution = CSPSolver(csp_circuit)
-    print("backtrack: ", csp_solution.backtrack())
+    print("backtrack: ", csp_solution.backtrack(False, False, False))
     print("Final output: ", csp_circuit)
-
+    csp_circuit.print_completed_board()
 
 if __name__ == '__main__':
     main()

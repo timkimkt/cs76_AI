@@ -11,6 +11,10 @@ class CSPSolver():
         # variable for no heuristic
         self.i = -1
 
+        self.initial = True
+
+        self.backtrack_count = 0
+
     # state is being passed as a list
     def MRV_heuristic(self, state, tiebreak=False):
 
@@ -43,13 +47,16 @@ class CSPSolver():
                         tied = [ ]
                         tied.append(i)
 
-        print("tied: ", tied)
+        #print("tied: ", tied)
         if tiebreak and len(tied) > 1:
             for i in tied:
-                max_var = float('-inf')
+                max_const, max_var = float('-inf'), 0
                 for d in self.problem.domain:
                     state[i] = d
-                    max_var = max(self.Degree_heuristic(state), max_var)
+                    curr_const, curr_var = self.Degree_heuristic(state)
+                    if curr_const > max_const:
+                        max_const, max_var = curr_const, curr_var
+
                     state[i] = self.problem.domain[-1]
 
                 return max_var
@@ -73,7 +80,7 @@ class CSPSolver():
                 if len(subtracted) > max_const:
                     max_const, max_var = len(subtracted), i
 
-        return max_var
+        return max_const, max_var
 
     # pick domain that rules out the fewest values in remaining values
     def LCV_heuristic(self, unassigned_var):
@@ -162,32 +169,67 @@ class CSPSolver():
                 self.problem.domain[v1].remove(d_v1)
                 revised = True
 
-        if revised:
-            print('revised! ')
         return revised
 
 
 
-    def backtrack(self):
+    def backtrack(self, MRV, Degree, LCV, Tiebreak=False):
+    # def backtrack(self):
 
         self.problem.assignment = list(self.problem.assignment)
         #print("BackTrack: ", self.problem)
 
         # check if all the variables have been assigned
         if self.problem.assignment_complete():
-            print("complete", self.problem.assignment)
+            self.backtrack_count += 1
+            print("Backtrack called ", self.backtrack_count, "times... ")
+            #print("complete", self.problem.assignment)
             return tuple(self.problem.assignment)
 
-        # uncomment each heurisitc
-        unassigned_var = self.MRV_heuristic(self.problem.assignment, True)
+        #unassigned_var = self.MRV_heuristic(self.problem.assignment)
         #unassigned_var = self.Degree_heuristic(self.problem.assignment)
-        #unassigned_var = self.no_heuristic()
-        #print("Selecting unassigned..: ", unassigned_var)
+        # unassigned_var = self.no_heuristic()
 
-        # sort according to LCV (unassigned var )
-        domain = self.LCV_heuristic(unassigned_var)
+        # # uncomment each heurisitc
+        if MRV:
+            unassigned_var = self.MRV_heuristic(self.problem.assignment, Tiebreak)
 
-        #for d in self.problem.domain[unassigned_var]:
+            if MRV and Tiebreak:
+                print("MRV selected with Tiebreak (Degree)") if self.initial else None
+
+            else:
+                print("MRV selected") if self.initial else None
+            #self.initial = False
+
+        elif Degree:
+            print("Degree selected") if self.initial else None
+            unassigned_var = self.Degree_heuristic(self.problem.assignment)[1]
+            #self.initial = False
+        else:
+            print("No heuristic selected") if self.initial else None
+            unassigned_var = self.no_heuristic()
+
+        print("Selecting unassigned: ", unassigned_var)
+
+        # sort according to LCV (unassigned var)
+        if LCV:
+            print("LCV heuristic selected") if self.initial else None
+            self.initial = False
+            domain = self.LCV_heuristic(unassigned_var)
+        else:
+            print("LCV not selected") if self.initial else None
+            self.initial = False
+            domain = self.problem.domain[unassigned_var]
+
+
+        # domain = self.LCV_heuristic(unassigned_var)
+        #print("heuristic domain", domain)
+        # domain = self.problem.domain[unassigned_var]
+        # print("non-heuristic domain", domain)
+
+        self.backtrack_count += 1
+        print("Backtrack called ", self.backtrack_count, "times... ")
+
         for d in domain:
 
             # assign value to variable
@@ -196,18 +238,21 @@ class CSPSolver():
 
             # new assignment satisfy constraint
             if self.problem.constraint_satisfy(self.problem.assignment, unassigned_var):
-                print("constraint satisfy")
+                #print("constraint satisfy")
 
                 # conduct inference (modifies domain in place)
-                self.AC_3()
 
-                result = self.backtrack()
+                #self.AC_3()
+
+
+                # result = self.backtrack()
+                result = self.backtrack(MRV, Degree, LCV, Tiebreak)
                 if result:
                     return result
 
             # reset variable value
             else:
-                print("not satisfy")
+                #print("not satisfy")
                 # undo assignment
                 self.problem.assignment[unassigned_var] = self.problem.domain[-1]
 
