@@ -67,12 +67,11 @@ class CSPSolver():
 
     # function for no heuristic (returns variables in order from zero)
     def no_heuristic(self):
-        self.i += 1
-        if self.i < len(self.problem.assignment):
-            return self.i
-        else:
-            self.i = 0
-            return self.i
+        for i, v in enumerate(self.problem.assignment):
+            if self.problem.unassigned(v):
+                return i
+
+        return None
 
     # once variable selected, reorder its domain so that
     # fewest choices for neighbor is ruled out (highest domain count)
@@ -213,25 +212,18 @@ class CSPSolver():
             # new assignment satisfy constraint
             if self.problem.constraint_satisfy(self.problem.assignment, curr_var):
 
-                if inference:
-                    domain_copy = copy.deepcopy(domain)
-
-                # forward checking
-                    for neigh in self.problem.map_number[curr_var]:                #
-                        if self.problem.unassigned(self.problem.assignment[neigh]) and d in domain_copy[neigh]:
-                            domain_copy[neigh].remove(d)
-
-                # conduct inference (modifies domain in place)
-                if inference:
-                    self.AC_3(domain_copy)
+                # conduct inference (modifies domain)
+                # if inference:
+                #     domain_copy = copy.deepcopy(domain)
+                #     self.AC_3(domain_copy)
 
                 result = self.backtrack(domain, inference, MRV, Degree, LCV, Tiebreak)
 
                 if result:
                     return result
 
-                if inference:
-                    domain = domain_copy
+                # if inference:
+                #     domain = domain_copy
 
             else:
                 # undo assignment
