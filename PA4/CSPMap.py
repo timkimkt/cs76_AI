@@ -23,7 +23,7 @@ class CSPMap():
 
     # assigns variables to number from zero
     def assign_var(self, variable):
-        variables = [ ]
+        variables = []
 
         i = 0
         for v in variable:
@@ -38,7 +38,6 @@ class CSPMap():
     def assign_domain(self, domain):
 
         domains = {}
-        #domains[-1] = None
         domains[-1] = -1
 
         for v in range(len(self.variable)):
@@ -54,26 +53,11 @@ class CSPMap():
 
         return domains
 
-        # ### MOD DM domains = []
-        # domains = { }
-        #
-        # #self.var_to_domain[-1] = "Unassigned"
-        # self.var_to_domain[None] = "Unassigned"
-        #
-        # i = 0
-        # for d in domain:
-        #     #domains.append(i)
-        #     domains[i] = [i]
-        #     self.var_to_domain[i] = d
-        #     i += 1
-        #
-        # return domains
-
     # converts text map from user to map of numbers
     # based on variable assignment
     def map_text_to_number(self, map):
 
-        output = { }
+        output = {}
 
         for region in map.keys():
             output[self.var_to_region_rev[region]] = []
@@ -82,31 +66,12 @@ class CSPMap():
 
         return output
 
-    # string method for printing
-    # converts integer values to respective string values
-    def __str__(self):
-        res = [ ]
-
-        for i,v in enumerate(self.assignment):
-            if v == -1:
-            #     res.append(str(self.var_to_region[i]) + ": Unassigned")
-            #     continue
-            # if v is None:
-                res.append(str(self.var_to_region[i]) + ": Unassigned")
-                continue
-
-            #print("h", self.assignment)
-            res.append(str(self.var_to_region[i]) + ": " + str(self.var_to_domain[self.assignment[i]]))
-
-        string = "Assignment:  " + str(res)
-        return string
-
-    # generaate constraint map (pair of var to pair of domain)
+    # generate constraint map (pair of var to pair of domain)
     def generate_constraint(self):
 
-        output = { }
+        output = {}
 
-        #for each variable pair
+        # for each variable pair
         for r1 in self.map_number:
             for r2 in self.map_number[r1]:
                 # avoid duplicates
@@ -129,35 +94,44 @@ class CSPMap():
         for neigh in self.map_number[var]:
             # Debug: print('neig', self.var_to_region[neigh])
             # skip if neighbor has not been assigned
-
             if state[neigh] != -1:
-            ###if state[neigh] is not None:
                 # check both pairs in the constraint
                 if (var, neigh) in self.constraint:
                     # return false if assignment does not exist in constraint
                     if (state[var], state[neigh]) not in self.constraint[(var, neigh)]:
-                        #print("False1")
-
                         return False
 
                 elif (neigh, var) in self.constraint:
                     # return false if assignment does not exist in constraint
                     if (state[neigh], state[var]) not in self.constraint[(neigh, var)]:
-                        #print("False2", state[neigh], state[var], self.constraint[(neigh, var)])
-
                         return False
 
         return True
 
+    # checks if assignment is complete
     def assignment_complete(self):
         return -1 not in self.assignment
-        #return None not in self.assignment
-        # return -1 not in self.assignment
 
+    # checks for unassigned variable
     def unassigned(self, var):
         return var == -1
-        # return var is None
 
+
+    # string method for printing
+    # converts integer values to respective string values
+    def __str__(self):
+        res = [ ]
+
+        for i,v in enumerate(self.assignment):
+            if v == -1:
+                res.append(str(self.var_to_region[i]) + ": Unassigned")
+                continue
+
+            #print("h", self.assignment)
+            res.append(str(self.var_to_region[i]) + ": " + str(self.var_to_domain[self.assignment[i]]))
+
+        string = "Assignment:  " + str(res)
+        return string
 
 def main():
     regions = ["WA", "NT", "Q", "NSW", "V", "SA", "T"]
@@ -165,48 +139,83 @@ def main():
     var_map = {"WA": ["NT", "SA"], "NT": ["WA", "SA", "Q"], "Q": ["NT", "SA", "NSW"],
                "NSW": ["Q", "SA", "V"], "V": ["NSW", "SA"], "SA": ["WA", "NT", "Q", "NSW", "V"], "T": []}
 
-    # map_csp = CSPMap(regions, colors, var_map)
-    # csp_solution = CSPSolver(map_csp)
-    # print(len(map_csp.constraint), "constraints generated: ", map_csp.constraint)
-    # print("Map to number", map_csp.map_number)
+    print("Here are the regions:", regions)
+    print("here are the colors: ", colors)
+    print("Here is the map: ", var_map)
+    print("-------------------------------------------------------------------------------------------------------------------------")
 
+    print("-------------------------------------------------------------------------------------------------------------------------")
+    # backtrack(Domain, Inference, MRV, Degree, LCV, Tiebreak=False):
+    csp_map = CSPMap(regions, colors, var_map)
+    csp_solution = CSPSolver(csp_map)
+    csp_solution.backtrack(csp_map.domain, False, True, False, False, False)
+    print("Node count: ", csp_solution.node_count)
+    print("Value count: ", csp_solution.value_count)
+    print(csp_map)
 
-    # map_csp = CSPMap(regions, colors, var_map)
-    # csp_solution = CSPSolver(map_csp)
-    # print("Backtrack: ", csp_solution.backtrack())
-    # print("Final output: ", map_csp)
+    print("-------------------------------------------------------------------------------------------------------------------------")
+    # backtrack(Domain, Inference, MRV, Degree, LCV, Tiebreak=False):
+    csp_map = CSPMap(regions, colors, var_map)
+    csp_solution = CSPSolver(csp_map)
+    csp_solution.backtrack(csp_map.domain, False, False, True, False, False)
+    print("Node count: ", csp_solution.node_count)
+    print("Value count: ", csp_solution.value_count)
+    print(csp_map)
 
-    print("---------------------------------------------------------------------")
-    # backtrack(MRV, Degree, LCV, Tiebreak=False):
-    map_csp = CSPMap(regions, colors, var_map)
-    csp_solution = CSPSolver(map_csp)
-    print("Backtrack: ", csp_solution.backtrack(True, False, False))
-    print("Final output: ", map_csp)
+    print("-------------------------------------------------------------------------------------------------------------------------")
+    # backtrack(Domain, Inference, MRV, Degree, LCV, Tiebreak=False):
+    csp_map = CSPMap(regions, colors, var_map)
+    csp_solution = CSPSolver(csp_map)
+    csp_solution.backtrack(csp_map.domain, False, True, False, False, True)
+    print("Node count: ", csp_solution.node_count)
+    print("Value count: ", csp_solution.value_count)
+    print(csp_map)
 
-    print("---------------------------------------------------------------------")
-    # backtrack(MRV, Degree, LCV, Tiebreak=False):
-    map_csp = CSPMap(regions, colors, var_map)
-    csp_solution = CSPSolver(map_csp)
-    print("Backtrack: ", csp_solution.backtrack(True, False, False, True))
-    print("Final output: ", map_csp)
+    print("-------------------------------------------------------------------------------------------------------------------------")
+    # backtrack(Domain, Inference, MRV, Degree, LCV, Tiebreak=False):
+    csp_map = CSPMap(regions, colors, var_map)
+    csp_solution = CSPSolver(csp_map)
+    csp_solution.backtrack(csp_map.domain, False, False, False, True, False)
+    print("Node count: ", csp_solution.node_count)
+    print("Value count: ", csp_solution.value_count)
+    print(csp_map)
 
-    print("---------------------------------------------------------------------")
-    map_csp = CSPMap(regions, colors, var_map)
-    csp_solution = CSPSolver(map_csp)
-    print("Backtrack: ", csp_solution.backtrack(False, True, False))
-    print("Final output: ", map_csp)
+    print("-------------------------------------------------------------------------------------------------------------------------")
+    # backtrack(Domain, Inference, MRV, Degree, LCV, Tiebreak=False):
+    csp_map = CSPMap(regions, colors, var_map)
+    csp_solution = CSPSolver(csp_map)
+    csp_solution.backtrack(csp_map.domain, False, True, False, True, True)
+    print("Node count: ", csp_solution.node_count)
+    print("Value count: ", csp_solution.value_count)
+    print(csp_map)
 
-    print("---------------------------------------------------------------------")
-    map_csp = CSPMap(regions, colors, var_map)
-    csp_solution = CSPSolver(map_csp)
-    print("Backtrack: ", csp_solution.backtrack(False, False, True))
-    print("Final output: ", map_csp)
+    print("-------------------------------------------------------------------------------------------------------------------------")
+    # backtrack(Domain, Inference, MRV, Degree, LCV, Tiebreak=False):
+    csp_map = CSPMap(regions, colors, var_map)
+    csp_solution = CSPSolver(csp_map)
+    csp_solution.backtrack(csp_map.domain, False, False, True, True, False)
+    print("Node count: ", csp_solution.node_count)
+    print("Value count: ", csp_solution.value_count)
+    print(csp_map)
 
-    print("---------------------------------------------------------------------")
-    map_csp = CSPMap(regions, colors, var_map)
-    csp_solution = CSPSolver(map_csp)
-    print("Backtrack: ", csp_solution.backtrack(False, False, False))
-    print("Final output: ", map_csp)
+    print("-------------------------------------------------------------------------------------------------------------------------")
+    # backtrack(Domain, Inference, MRV, Degree, LCV, Tiebreak=False):
+    csp_map = CSPMap(regions, colors, var_map)
+    csp_solution = CSPSolver(csp_map)
+    csp_solution.backtrack(csp_map.domain, True, True, False, False, True)
+    print("Node count: ", csp_solution.node_count)
+    print("Value count: ", csp_solution.value_count)
+    print(csp_map)
+
+    print("-------------------------------------------------------------------------------------------------------------------------")
+    # backtrack(Domain, Inference, MRV, Degree, LCV, Tiebreak=False):
+    csp_map = CSPMap(regions, colors, var_map)
+    csp_solution = CSPSolver(csp_map)
+    csp_solution.backtrack(csp_map.domain, True, False, True, True, False)
+    print("Node count: ", csp_solution.node_count)
+    print("Value count: ", csp_solution.value_count)
+    print(csp_map)
+
 
 if __name__ == '__main__':
     main()
