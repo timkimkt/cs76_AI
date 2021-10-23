@@ -1,3 +1,9 @@
+# Class: COSC 76
+# Assignment: PA 3
+# Date: Oct 11, 2021
+# Author: Tim (Kyoung Tae) Kim
+# Year: '22
+
 import chess
 from time import sleep
 import random
