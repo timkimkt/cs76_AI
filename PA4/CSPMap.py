@@ -1,3 +1,9 @@
+# Class: COSC 81
+# Assignment: PA 4
+# Date: Oct 23, 2021
+# Author: Tim (Kyoung Tae) Kim
+# Year: '22
+
 from CSPSolver import CSPSolver
 
 class CSPMap():
@@ -6,6 +12,7 @@ class CSPMap():
         # initialize dictionaries
         self.var_to_region = {}
         self.var_to_domain = {}
+        self.var_map = map
 
         # variables and domains are integers starting at 0
         self.variable = self.assign_var(list(map.keys()))
@@ -19,7 +26,6 @@ class CSPMap():
 
         # constraint mapping pair of integer (two regions) to pair of integer (two color)
         self.constraint = self.generate_constraint()
-        #self.assignment = (-1,-1,-1,-1,-1,-1,-1)      # starting state
         self.assignment = [(-1) for _ in range(len(self.variable))]
 
     # assigns variables to number from zero
@@ -54,8 +60,7 @@ class CSPMap():
 
         return domains
 
-    # converts text map from user to map of numbers
-    # based on variable assignment
+    # create a map of neighbors based on variable number
     def map_text_to_number(self, map):
 
         output = {}
@@ -94,7 +99,6 @@ class CSPMap():
 
         # for all neighbors of variable that has just been assigned
         for neigh in self.map_number[var]:
-            # Debug: print('neig', self.var_to_region[neigh])
             # skip if neighbor has not been assigned
             if state[neigh] != -1:
                 # check both pairs in the constraint
@@ -133,6 +137,8 @@ class CSPMap():
 
         string = "Assignment:  " + str(res)
         return string
+
+
 
 def main():
     colors = ["red", "green", "blue", "purple"]
@@ -202,97 +208,91 @@ def main():
     # backtrack(Domain, Inference, MRV, Degree, LCV, Tiebreak=False):
     csp_map = CSPMap(var_map, colors)
     csp_solution = CSPSolver(csp_map)
-    csp_solution.backtrack(csp_map.domain, False, False, False, False, False)
+    csp_solution.backtrack(csp_map.domain, inference=False, MRV=False, Degree=False, LCV=False, Tiebreak=False)
     print("Node count: ", csp_solution.node_count)
     print("Value count: ", csp_solution.value_count)
     print(csp_map)
+    csp_solution.check_conflict(csp_map)
 
     print("-------------------------------------------------------------------------------------------------------------------------")
     # backtrack(Domain, Inference, MRV, Degree, LCV, Tiebreak=False):
     csp_map = CSPMap(var_map, colors)
     csp_solution = CSPSolver(csp_map)
-    csp_solution.backtrack(csp_map.domain, False, True, False, False, False)
+    csp_solution.backtrack(csp_map.domain, inference=False, MRV=True, Degree=False, LCV=False, Tiebreak=False)
     print("Node count: ", csp_solution.node_count)
     print("Value count: ", csp_solution.value_count)
     print(csp_map)
+    csp_solution.check_conflict(csp_map)
 
     print("-------------------------------------------------------------------------------------------------------------------------")
     # backtrack(Domain, Inference, MRV, Degree, LCV, Tiebreak=False):
     csp_map = CSPMap(var_map, colors)
     csp_solution = CSPSolver(csp_map)
-    csp_solution.backtrack(csp_map.domain, False, False, True, False, False)
+    csp_solution.backtrack(csp_map.domain, inference=False, MRV=False, Degree=True, LCV=False, Tiebreak=False)
     print("Node count: ", csp_solution.node_count)
     print("Value count: ", csp_solution.value_count)
     print(csp_map)
+    csp_solution.check_conflict(csp_map)
 
     print("-------------------------------------------------------------------------------------------------------------------------")
     # backtrack(Domain, Inference, MRV, Degree, LCV, Tiebreak=False):
     csp_map = CSPMap(var_map, colors)
     csp_solution = CSPSolver(csp_map)
-    csp_solution.backtrack(csp_map.domain, False, True, False, False, True)
+    csp_solution.backtrack(csp_map.domain, inference=False, MRV=True, Degree=False, LCV=False, Tiebreak=True)
     print("Node count: ", csp_solution.node_count)
     print("Value count: ", csp_solution.value_count)
     print(csp_map)
+    csp_solution.check_conflict(csp_map)
 
     print("-------------------------------------------------------------------------------------------------------------------------")
     # backtrack(Domain, Inference, MRV, Degree, LCV, Tiebreak=False):
     csp_map = CSPMap(var_map, colors)
     csp_solution = CSPSolver(csp_map)
-    csp_solution.backtrack(csp_map.domain, False, False, False, True, False)
+    csp_solution.backtrack(csp_map.domain, inference=False, MRV=False, Degree=False, LCV=True, Tiebreak=False)
     print("Node count: ", csp_solution.node_count)
     print("Value count: ", csp_solution.value_count)
     print(csp_map)
+    csp_solution.check_conflict(csp_map)
 
     print("-------------------------------------------------------------------------------------------------------------------------")
     # backtrack(Domain, Inference, MRV, Degree, LCV, Tiebreak=False):
     csp_map = CSPMap(var_map, colors)
     csp_solution = CSPSolver(csp_map)
-    csp_solution.backtrack(csp_map.domain, False, True, False, True, True)
+    csp_solution.backtrack(csp_map.domain, inference=False, MRV=True, Degree=False, LCV=True, Tiebreak=True)
     print("Node count: ", csp_solution.node_count)
     print("Value count: ", csp_solution.value_count)
     print(csp_map)
+    csp_solution.check_conflict(csp_map)
 
     print("-------------------------------------------------------------------------------------------------------------------------")
     # backtrack(Domain, Inference, MRV, Degree, LCV, Tiebreak=False):
     csp_map = CSPMap(var_map, colors)
     csp_solution = CSPSolver(csp_map)
-    csp_solution.backtrack(csp_map.domain, False, False, True, True, False)
+    csp_solution.backtrack(csp_map.domain, inference=False, MRV=False, Degree=True, LCV=True, Tiebreak=False)
     print("Node count: ", csp_solution.node_count)
     print("Value count: ", csp_solution.value_count)
     print(csp_map)
+    csp_solution.check_conflict(csp_map)
 
     print("-------------------------------------------------------------------------------------------------------------------------")
     # backtrack(Domain, Inference, MRV, Degree, LCV, Tiebreak=False):
     csp_map = CSPMap(var_map, colors)
     csp_solution = CSPSolver(csp_map)
-    csp_solution.backtrack(csp_map.domain, inference=True, MRV=True, Degree=False, LCV=True, Tiebreak=True)
+    csp_solution.backtrack(csp_map.domain, inference=True, MRV=False, Degree=False, LCV=False, Tiebreak=False)
     print("Node count: ", csp_solution.node_count)
     print("Value count: ", csp_solution.value_count)
     print(csp_map)
+    csp_solution.check_conflict(csp_map)
 
     print("-------------------------------------------------------------------------------------------------------------------------")
     # backtrack(Domain, Inference, MRV, Degree, LCV, Tiebreak=False):
     csp_map = CSPMap(var_map, colors)
     csp_solution = CSPSolver(csp_map)
-    csp_solution.backtrack(csp_map.domain, True, False, True, True, False)
+    csp_solution.backtrack(csp_map.domain, inference=True, MRV=False, Degree=True, LCV=True, Tiebreak=False)
     print("Node count: ", csp_solution.node_count)
     print("Value count: ", csp_solution.value_count)
     print(csp_map)
-
-    # assignment = dict()
-    # for i, v in enumerate(csp_map.assignment):
-    #     if v == -1:
-    #         assignment[csp_map.var_to_region[i]] = "Unassigned"
-    #         continue
-    #
-    #     assignment[csp_map.var_to_region[i]] = csp_map.var_to_domain[csp_map.assignment[i]]
-    #
-    # print(assignment)
-    # for state, neighbors in var_map.items():
-    #     for n in neighbors:
-    #         if assignment[state] == assignment[n]:
-    #             print(f'Conflict. {state} and {n} are both {assignment[n]}')
-
+    csp_solution.check_conflict(csp_map)
 
 if __name__ == '__main__':
     main()

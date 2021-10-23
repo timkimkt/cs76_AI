@@ -1,3 +1,9 @@
+# Class: COSC 81
+# Assignment: PA 4
+# Date: Oct 23, 2021
+# Author: Tim (Kyoung Tae) Kim
+# Year: '22
+
 from collections import deque
 import copy
 
@@ -71,8 +77,6 @@ class CSPSolver():
     # once variable selected, reorder its domain so that
     # fewest choices for neighbor is ruled out (highest domain count)
     def LCV_heuristic(self, domain, curr_var):
-        # print("domain before sort", domain)
-        # print("domain[curr_var] before sort", domain[curr_var])
 
         neigh_choices = { }
 
@@ -122,9 +126,12 @@ class CSPSolver():
 
     def revise(self, domain, v1, v2):
         revised = False
+        # in order to save current assignment
         assignment = self.problem.assignment.copy()
+
         # if v1 is not assigned
         for d_v1 in domain[v1]:
+
             satisfy = False
             assignment[v1] = d_v1
             if self.problem.constraint_satisfy(assignment, v1):
@@ -138,14 +145,11 @@ class CSPSolver():
             if not satisfy:
                 domain[v1].remove(d_v1)
                 revised = True
-        # print(self.problem.assignment)
         return revised
-
 
     def backtrack(self, domain, inference, MRV, Degree, LCV, Tiebreak=False):
 
-
-        # # prints number of nodes (calls to backtrack)
+        # prints number of nodes (calls to backtrack)
         self.node_count += 1
 
         self.problem.assignment = list(self.problem.assignment)
@@ -153,6 +157,7 @@ class CSPSolver():
         # check if all the variables have been assigned
         if self.problem.assignment_complete():
             return tuple(self.problem.assignment)
+
         ############################### heuristics ######################################
         # activate heuristic based on boolean passed in
         if inference:
@@ -193,9 +198,7 @@ class CSPSolver():
 
         # in domain of current variable
         for d in domain[curr_var]:
-            # if LCV:
-            #     d = self.LCV_heuristic(domain, curr_var)
-
+            # count number of domains explored
             self.value_count += 1
 
             # assign value to variable
@@ -207,10 +210,12 @@ class CSPSolver():
                 # conduct inference (modifies domain)
                 if inference:
                     domain_copy = copy.deepcopy(domain)
-                    domain[curr_var] = [d]
+
                     if self.AC_3(domain):
+                        # call backtrack if inference is
                         result = self.backtrack(domain, inference, MRV, Degree, LCV, Tiebreak)
                     else:
+                        # restore copy if inference fails
                         domain = domain_copy
                         result = False
 
@@ -226,6 +231,24 @@ class CSPSolver():
 
         return False
 
+
+    def check_conflict(self, problem):
+        assignment = dict()
+        for i, v in enumerate(problem.assignment):
+            if v == -1:
+                assignment[problem.var_to_region[i]] = "Unassigned"
+                continue
+
+            assignment[problem.var_to_region[i]] = problem.var_to_domain[problem.assignment[i]]
+
+        conflict = False
+        for state, neighbors in problem.var_map.items():
+            for n in neighbors:
+                if assignment[state] == assignment[n]:
+                    conflict = True
+                    print(f'Conflict. {state} and {n} are both {assignment[n]}')
+        if not conflict:
+            print("No conflict")
 
 def main():
     pass

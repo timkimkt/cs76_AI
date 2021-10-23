@@ -1,3 +1,8 @@
+# Class: COSC 81
+# Assignment: PA 4
+# Date: Oct 23, 2021
+# Author: Tim (Kyoung Tae) Kim
+# Year: '22
 
 from CSPSolver import CSPSolver
 import numpy as np
@@ -8,6 +13,7 @@ class CSPCircuit():
     def __init__(self, component, board, map):
 
         self.var_to_component = {}        # component pieces
+        self.var_map = map
 
         # board dimensions
         self.board = board
@@ -79,7 +85,7 @@ class CSPCircuit():
 
         output = { }
 
-        #for each variable pair
+        # for each variable pair
         for r1 in self.var_to_component.keys():
             for r2 in self.var_to_component.keys():
                 # avoid duplicates
@@ -115,6 +121,7 @@ class CSPCircuit():
 
         return False
 
+    # create a map of neighbors based on variable number
     def map_piece_to_number(self, map):
 
         output = { }
@@ -126,7 +133,6 @@ class CSPCircuit():
                     output[self.var_to_component_rev[circuit]].append(self.var_to_component_rev[other])
 
         return output
-
 
     # check that recently assigned variable satisfies constraint
     def constraint_satisfy(self, state, var):
@@ -141,7 +147,7 @@ class CSPCircuit():
                     if (state[var], state[neigh]) not in self.constraint[(var, neigh)]:
                         return False
 
-                elif (neigh, var) in self.constraint:
+                if (neigh, var) in self.constraint:
                     # return false if assignment does not exist in constraint
                     if (state[neigh], state[var]) not in self.constraint[(neigh, var)]:
                         return False
@@ -162,66 +168,66 @@ class CSPCircuit():
         return string
 
     def print_completed_board(self):
-        # copy board for printing
-        board_copy = copy.copy(self.board)
 
-        # for points in final assignment
-        for i, p in enumerate(self.assignment):
+        if self.assignment_complete():
+            # copy board for printing
+            board_copy = copy.copy(self.board)
 
-            # convert coordinates into points in 2d-array
-            r, c = len(self.board)-1 - p[1], p[0]
+            # for points in final assignment
+            for i, p in enumerate(self.assignment):
 
-            # print each component based on dimensions
-            for y in range(r, r - self.component_size[i][1], -1):
-                for x in range(c, c + self.component_size[i][0]):
-                    board_copy[y][x] = self.var_to_component[i].lower()
+                # convert coordinates into points in 2d-array
+                r, c = len(self.board)-1 - p[1], p[0]
 
-        # print board
-        print(board_copy)
-        del board_copy
+                # print each component based on dimensions
+                for y in range(r, r - self.component_size[i][1], -1):
+                    for x in range(c, c + self.component_size[i][0]):
+                        board_copy[y][x] = self.var_to_component[i].lower()
+
+            # print board
+            print(board_copy)
+            del board_copy
+        else:
+            print(self.board)
 
 def main():
 
     ############### CLASS EXAMPLE ##################
-    A = np.reshape([['a']*6], (2,3))
-    B = np.reshape([['b']*10], (2,5))
-    C = np.reshape([['c']*6], (3,2))
-    E = np.reshape([['e']*7], (1,7))
-    components = ["A", "B", "C", "E"]
-    components_map = {"A": A, "B": B, "C": C, "E": E}
-    print("Here are the components: \n", A, "\n", B, "\n", C, "\n", E)
-    board = np.reshape([["."]*30], (3, 10))
-    print("Here is the circuit: \n", board)
-    print("-------------------------------------------------------------------------------------------------------------------------")
 
-    ############### MY EXAMPLE ##################
-    # A = np.reshape([['a']*8], (2,4))
-    # B = np.reshape([['b']*20], (4,5))
-    # C = np.reshape([['c']*10], (2,5))
-    # E = np.reshape([['e']*10], (1,10))
+    # A = np.reshape([['a']*6], (2,3))
+    # B = np.reshape([['b']*10], (2,5))
+    # C = np.reshape([['c']*6], (3,2))
+    # E = np.reshape([['e']*7], (1,7))
     # components = ["A", "B", "C", "E"]
     # components_map = {"A": A, "B": B, "C": C, "E": E}
+    #
     # print("Here are the components: \n", A, "\n", B, "\n", C, "\n", E)
-    # board = np.reshape([["."]*100], (10, 10))
+    # board = np.reshape([["."]*30], (3, 10))
     # print("Here is the circuit: \n", board)
     # print("-------------------------------------------------------------------------------------------------------------------------")
-    # #################################
 
-    # print("-------------------------------------------------------------------------------------------------------------------------")
-    # # backtrack(Domain, Inference, MRV, Degree, LCV, Tiebreak=False):
-    # csp_circuit = CSPCircuit(components, board, components_map)
-    # csp_solution = CSPSolver(csp_circuit)
-    # csp_solution.backtrack(csp_circuit.domain, False, True, False, False, False)
-    # print("Node count: ", csp_solution.node_count)
-    # print("Value count: ", csp_solution.value_count)
-    # print(csp_circuit)
-    # csp_circuit.print_completed_board()
+    ############### MY EXAMPLE ##################
+    A = np.reshape([['a']*9], (3,3))
+    B = np.reshape([['b']*6], (2,3))
+    C = np.reshape([['c']*10], (5,2))
+    E = np.reshape([['e']*6], (2,3))
+    D = np.reshape([['e']*3], (1,3))
+    F = np.reshape([['f']*6], (1,6))
+
+    components = ["A", "B", "C", "D", "E", "F"]
+    components_map = { "A": A, "B": B, "C": C, "D": D, "E": E, "F": F}
+
+    print("Here are the components: \n", A, "\n", B, "\n", C, "\n", D, "\n", E, "\n", F)
+    board = np.reshape([["."]*40], (5, 8))
+    print("Here is the circuit: \n", board)
+    print("-------------------------------------------------------------------------------------------------------------------------")
+    # ###################################
 
     print("-------------------------------------------------------------------------------------------------------------------------")
     # backtrack(Domain, Inference, MRV, Degree, LCV, Tiebreak=False):
     csp_circuit = CSPCircuit(components, board, components_map)
     csp_solution = CSPSolver(csp_circuit)
-    csp_solution.backtrack(csp_circuit.domain, False, False, True, False, False)
+    csp_solution.backtrack(csp_circuit.domain, inference=False, MRV=False, Degree=False, LCV=False, Tiebreak=False)
     print("Node count: ", csp_solution.node_count)
     print("Value count: ", csp_solution.value_count)
     print(csp_circuit)
@@ -231,7 +237,7 @@ def main():
     # backtrack(Domain, Inference, MRV, Degree, LCV, Tiebreak=False):
     csp_circuit = CSPCircuit(components, board, components_map)
     csp_solution = CSPSolver(csp_circuit)
-    csp_solution.backtrack(csp_circuit.domain, False, True, False, False, True)
+    csp_solution.backtrack(csp_circuit.domain, inference=False, MRV=True, Degree=False, LCV=False, Tiebreak=False)
     print("Node count: ", csp_solution.node_count)
     print("Value count: ", csp_solution.value_count)
     print(csp_circuit)
@@ -241,7 +247,7 @@ def main():
     # backtrack(Domain, Inference, MRV, Degree, LCV, Tiebreak=False):
     csp_circuit = CSPCircuit(components, board, components_map)
     csp_solution = CSPSolver(csp_circuit)
-    csp_solution.backtrack(csp_circuit.domain, False, True, False, True, False)
+    csp_solution.backtrack(csp_circuit.domain, inference=False, MRV=False, Degree=True, LCV=False, Tiebreak=False)
     print("Node count: ", csp_solution.node_count)
     print("Value count: ", csp_solution.value_count)
     print(csp_circuit)
@@ -251,7 +257,7 @@ def main():
     # backtrack(Domain, Inference, MRV, Degree, LCV, Tiebreak=False):
     csp_circuit = CSPCircuit(components, board, components_map)
     csp_solution = CSPSolver(csp_circuit)
-    csp_solution.backtrack(csp_circuit.domain, False, True, False, True, True)
+    csp_solution.backtrack(csp_circuit.domain, inference=False, MRV=True, Degree=False, LCV=False, Tiebreak=True)
     print("Node count: ", csp_solution.node_count)
     print("Value count: ", csp_solution.value_count)
     print(csp_circuit)
@@ -261,7 +267,7 @@ def main():
     # backtrack(Domain, Inference, MRV, Degree, LCV, Tiebreak=False):
     csp_circuit = CSPCircuit(components, board, components_map)
     csp_solution = CSPSolver(csp_circuit)
-    csp_solution.backtrack(csp_circuit.domain, False, False, True, True, False)
+    csp_solution.backtrack(csp_circuit.domain, inference=False, MRV=False, Degree=False, LCV=True, Tiebreak=False)
     print("Node count: ", csp_solution.node_count)
     print("Value count: ", csp_solution.value_count)
     print(csp_circuit)
@@ -271,7 +277,7 @@ def main():
     # backtrack(Domain, Inference, MRV, Degree, LCV, Tiebreak=False):
     csp_circuit = CSPCircuit(components, board, components_map)
     csp_solution = CSPSolver(csp_circuit)
-    csp_solution.backtrack(csp_circuit.domain, True, True, False, True, True)
+    csp_solution.backtrack(csp_circuit.domain, inference=False, MRV=True, Degree=False, LCV=True, Tiebreak=True)
     print("Node count: ", csp_solution.node_count)
     print("Value count: ", csp_solution.value_count)
     print(csp_circuit)
@@ -281,11 +287,32 @@ def main():
     # backtrack(Domain, Inference, MRV, Degree, LCV, Tiebreak=False):
     csp_circuit = CSPCircuit(components, board, components_map)
     csp_solution = CSPSolver(csp_circuit)
-    csp_solution.backtrack(csp_circuit.domain, True, False, True, True, False)
+    csp_solution.backtrack(csp_circuit.domain, inference=False, MRV=False, Degree=True, LCV=True, Tiebreak=False)
     print("Node count: ", csp_solution.node_count)
     print("Value count: ", csp_solution.value_count)
     print(csp_circuit)
     csp_circuit.print_completed_board()
+
+    print("-------------------------------------------------------------------------------------------------------------------------")
+    # backtrack(Domain, Inference, MRV, Degree, LCV, Tiebreak=False):
+    csp_circuit = CSPCircuit(components, board, components_map)
+    csp_solution = CSPSolver(csp_circuit)
+    csp_solution.backtrack(csp_circuit.domain, inference=True, MRV=False, Degree=False, LCV=False, Tiebreak=False)
+    print("Node count: ", csp_solution.node_count)
+    print("Value count: ", csp_solution.value_count)
+    print(csp_circuit)
+    csp_circuit.print_completed_board()
+
+    print("-------------------------------------------------------------------------------------------------------------------------")
+    # backtrack(Domain, Inference, MRV, Degree, LCV, Tiebreak=False):
+    csp_circuit = CSPCircuit(components, board, components_map)
+    csp_solution = CSPSolver(csp_circuit)
+    csp_solution.backtrack(csp_circuit.domain, inference=True, MRV=False, Degree=True, LCV=False, Tiebreak=False)
+    print("Node count: ", csp_solution.node_count)
+    print("Value count: ", csp_solution.value_count)
+    print(csp_circuit)
+    csp_circuit.print_completed_board()
+
 
 if __name__ == '__main__':
     main()
