@@ -11,16 +11,11 @@ class CSPSolver():
         self.node_count = 0
         self.value_count = 0
 
-        # variable for no heuristic fn
-        self.i = -1
-
-        self.LCV_history = { }
-
     # Choose the variable with the fewest legal values
     # (i.e. the variable that will fail first)
     def MRV_heuristic(self, state, domain, tiebreak=False):
 
-        min_count, min_var = float('inf'), 0
+        min_count, min_var = float('inf'), None
         tied = [ ]     # for tie-breaking
 
         # for all unassigned variables
@@ -50,7 +45,7 @@ class CSPSolver():
     # also used for tie-breaking by MRV (esp. for map-coloring)
     def Degree_heuristic(self, unassigned):
 
-        max_count, max_var = float('-inf'), 0
+        max_count, max_var = float('-inf'), None
 
         # for each unassigned variable
         for i in unassigned:
@@ -98,19 +93,12 @@ class CSPSolver():
                             if (d2, d1) in self.problem.constraint[(neigh, curr_var)]:
                                 domain_count += 1
             neigh_choices[d1] = domain_count
-            self.problem.assignment[curr_var] = self.problem.domain[0]
+            self.problem.assignment[curr_var] = self.problem.domain[-1]
 
-        # print("neigh_choices", neigh_choices)
         sorted_domain = sorted(domain[curr_var], key=lambda x: neigh_choices.get(x), reverse=True)
         domain[curr_var] = sorted_domain
-        # print("domain after sort", domain)
-        # print("domain[curr_var] after sort", domain[curr_var])
 
         return domain
-        # max_val = max(neigh_choices, key= lambda x: neigh_choices.get(x))
-        # # self.LCV_history
-        # return max_val
-
 
     def AC_3(self, domain):
         q = deque()
@@ -120,9 +108,12 @@ class CSPSolver():
 
         while q:
             v1, v2 = q.popleft()
+
             if self.revise(domain, v1, v2):
+
                 if len(domain[v1]) == 0:
                     return False
+
                 for neigh in self.problem.map_number[v1]:
                     if neigh != v2:
                         q.append((neigh, v1))
@@ -131,23 +122,28 @@ class CSPSolver():
 
     def revise(self, domain, v1, v2):
         revised = False
+        assignment = self.problem.assignment.copy()
+        # if v1 is not assigned
         for d_v1 in domain[v1]:
             satisfy = False
-            self.problem.assignment[v1] = d_v1
-            if self.problem.constraint_satisfy(self.problem.assignment, v1):
+            assignment[v1] = d_v1
+            if self.problem.constraint_satisfy(assignment, v1):
                 for d_v2 in domain[v2]:
-                    self.problem.assignment[v2] = d_v2
-                    if self.problem.constraint_satisfy(self.problem.assignment, v2):
+                    assignment[v2] = d_v2
+                    if self.problem.constraint_satisfy(assignment, v2):
                         satisfy = True
+                    assignment[v2] = self.problem.domain[-1]
+            assignment[v1] = self.problem.domain[-1]
 
             if not satisfy:
                 domain[v1].remove(d_v1)
                 revised = True
-
+        # print(self.problem.assignment)
         return revised
 
 
     def backtrack(self, domain, inference, MRV, Degree, LCV, Tiebreak=False):
+
 
         # # prints number of nodes (calls to backtrack)
         self.node_count += 1
@@ -172,11 +168,12 @@ class CSPSolver():
         elif Degree:
             print("Degree selected") if self.initial else None
 
-            # add unassigned variables to list
+            # add unassigned variables to list (required for degree)
             unassigned = [ ]
             for i, v in enumerate(self.problem.assignment):
                 if self.problem.unassigned(v):
                     unassigned.append(i)
+
             curr_var = self.Degree_heuristic(unassigned)
 
         else:
@@ -187,18 +184,13 @@ class CSPSolver():
         if LCV:
             print("LCV heuristic selected") if self.initial else None
             self.initial = False
-            #domain = self.LCV_heuristic(domain, curr_var)
-            #d = self.LCV_heuristic(domain, curr_var)
+            domain = self.LCV_heuristic(domain, curr_var)
 
-            # Bug: if LCV is called without MRV or Degree, leads to inifite loop
-            if not MRV and not Degree:
-                LCV = False
         else:
             print("LCV not selected") if self.initial else None
             self.initial = False
         ############################################################################
 
-       # print("DEBUG: domain after LCV", curr_var, domain[curr_var])
         # in domain of current variable
         for d in domain[curr_var]:
             # if LCV:
@@ -213,17 +205,20 @@ class CSPSolver():
             if self.problem.constraint_satisfy(self.problem.assignment, curr_var):
 
                 # conduct inference (modifies domain)
-                # if inference:
-                #     domain_copy = copy.deepcopy(domain)
-                #     self.AC_3(domain_copy)
+                if inference:
+                    domain_copy = copy.deepcopy(domain)
+                    domain[curr_var] = [d]
+                    if self.AC_3(domain):
+                        result = self.backtrack(domain, inference, MRV, Degree, LCV, Tiebreak)
+                    else:
+                        domain = domain_copy
+                        result = False
 
-                result = self.backtrack(domain, inference, MRV, Degree, LCV, Tiebreak)
+                else:
+                    result = self.backtrack(domain, inference, MRV, Degree, LCV, Tiebreak)
 
                 if result:
                     return result
-
-                # if inference:
-                #     domain = domain_copy
 
             else:
                 # undo assignment

@@ -136,8 +136,8 @@ class CSPMap():
 
 def main():
     colors = ["red", "green", "blue", "purple"]
-    # var_map = {"WA": ["NT", "SA"], "NT": ["WA", "SA", "Q"], "Q": ["NT", "SA", "NSW"],
-    #            "NSW": ["Q", "SA", "V"], "V": ["NSW", "SA"], "SA": ["WA", "NT", "Q", "NSW", "V"], "T": []}
+    var_map = {"WA": ["NT", "SA"], "NT": ["WA", "SA", "Q"], "Q": ["NT", "SA", "NSW"],
+               "NSW": ["Q", "SA", "V"], "V": ["NSW", "SA"], "SA": ["WA", "NT", "Q", "NSW", "V"], "T": []}
 
     var_map = {
         'AK': [],
@@ -265,7 +265,7 @@ def main():
     # backtrack(Domain, Inference, MRV, Degree, LCV, Tiebreak=False):
     csp_map = CSPMap(var_map, colors)
     csp_solution = CSPSolver(csp_map)
-    csp_solution.backtrack(csp_map.domain, True, True, False, True, True)
+    csp_solution.backtrack(csp_map.domain, inference=True, MRV=True, Degree=False, LCV=True, Tiebreak=True)
     print("Node count: ", csp_solution.node_count)
     print("Value count: ", csp_solution.value_count)
     print(csp_map)
@@ -279,19 +279,19 @@ def main():
     print("Value count: ", csp_solution.value_count)
     print(csp_map)
 
-    assignment = dict()
-    for i, v in enumerate(csp_map.assignment):
-        if v == -1:
-            assignment[csp_map.var_to_region[i]] = "Unassigned"
-            continue
-
-        assignment[csp_map.var_to_region[i]] = csp_map.var_to_domain[csp_map.assignment[i]]
-
-    print(assignment)
-    for state, neighbors in var_map.items():
-        for n in neighbors:
-            if assignment[state] == assignment[n]:
-                print(f'Conflict. {state} and {n} are both {assignment[n]}')
+    # assignment = dict()
+    # for i, v in enumerate(csp_map.assignment):
+    #     if v == -1:
+    #         assignment[csp_map.var_to_region[i]] = "Unassigned"
+    #         continue
+    #
+    #     assignment[csp_map.var_to_region[i]] = csp_map.var_to_domain[csp_map.assignment[i]]
+    #
+    # print(assignment)
+    # for state, neighbors in var_map.items():
+    #     for n in neighbors:
+    #         if assignment[state] == assignment[n]:
+    #             print(f'Conflict. {state} and {n} are both {assignment[n]}')
 
 
 if __name__ == '__main__':
