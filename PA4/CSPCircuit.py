@@ -141,10 +141,10 @@ class CSPCircuit():
                     if (state[var], state[neigh]) not in self.constraint[(var, neigh)]:
                         return False
 
-                elif (neigh, var) in self.constraint:
-                    # return false if assignment does not exist in constraint
-                    if (state[neigh], state[var]) not in self.constraint[(neigh, var)]:
-                        return False
+                # elif (neigh, var) in self.constraint:
+                #     # return false if assignment does not exist in constraint
+                #     if (state[neigh], state[var]) not in self.constraint[(neigh, var)]:
+                #         return False
 
         return True
 
@@ -262,6 +262,26 @@ def main():
     csp_circuit = CSPCircuit(components, board, components_map)
     csp_solution = CSPSolver(csp_circuit)
     csp_solution.backtrack(csp_circuit.domain, False, False, True, True, False)
+    print("Node count: ", csp_solution.node_count)
+    print("Value count: ", csp_solution.value_count)
+    print(csp_circuit)
+    csp_circuit.print_completed_board()
+
+    print("-------------------------------------------------------------------------------------------------------------------------")
+    # backtrack(Domain, Inference, MRV, Degree, LCV, Tiebreak=False):
+    csp_circuit = CSPCircuit(components, board, components_map)
+    csp_solution = CSPSolver(csp_circuit)
+    csp_solution.backtrack(csp_circuit.domain, True, True, False, True, True)
+    print("Node count: ", csp_solution.node_count)
+    print("Value count: ", csp_solution.value_count)
+    print(csp_circuit)
+    csp_circuit.print_completed_board()
+
+    print("-------------------------------------------------------------------------------------------------------------------------")
+    # backtrack(Domain, Inference, MRV, Degree, LCV, Tiebreak=False):
+    csp_circuit = CSPCircuit(components, board, components_map)
+    csp_solution = CSPSolver(csp_circuit)
+    csp_solution.backtrack(csp_circuit.domain, True, False, True, True, False)
     print("Node count: ", csp_solution.node_count)
     print("Value count: ", csp_solution.value_count)
     print(csp_circuit)
