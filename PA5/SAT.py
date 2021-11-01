@@ -17,7 +17,7 @@ class SAT:
         self.potential_variables = set()
 
         self.gen_var_clause()         # generates variable and clause list
-        self.threshold = 0.7          # threshold for picking random variable to flip
+        self.threshold = 0.9          # threshold for picking random variable to flip
                                       # (picking up
 
         # Debugging
@@ -29,6 +29,7 @@ class SAT:
 
         # Debugging
         print("Randomly assigned: ", self.variable)
+        #self.flipped_history = set()
 
     # generates list of variables and clauses
     def gen_var_clause(self):
@@ -71,13 +72,16 @@ class SAT:
         else:
             return "-" + variable
 
-    def max_variable_score(self):
+    def max_variable_score(self, variables):
         max_score, max_var = float('-inf'), None
         tied = [ ]
 
-        for var in self.potential_variables:
-            score = 0
+        #print("candidates", variables)
 
+        for var in variables:
+        #for var in self.potential_variables:
+            # if var not in self.flipped_history:
+            score = 0
             flipped_var = self.flip_var(var)
 
             for clause in self.unsatisfied_clause_list:
@@ -86,50 +90,30 @@ class SAT:
                     score += 1
 
             if score > max_score:
-                max_score = score
-                max_var = var
-                tied = []
-                tied.append(var)
+                max_score, max_var = score, self.flip_var(flipped_var)
+                tied = [ ]
+                tied.append(max_var)
 
             elif score == max_score:
-                tied.append(var)
+                tied.append(self.flip_var(flipped_var))
 
             else:
                 continue
 
-        if tied and len(tied) > 0:
+
+        #print("score", max_score, "len", len(tied), "tied", tied)
+
+        if len(tied) > 0:
             max_var = random.choice(tied)
 
-        return self.flip_var(max_var)
-
-        # # flip variable in assignment copy
-        # variable_copy = copy.copy(self.potential_variables)
-        #
-        # if var in variable_copy:
-        #     i = variable_copy.index(var)
-        # else:
-        #     i = variable_copy.index(self.flip_var(var))
-        #
-        # variable_copy[i] = self.flip_var(var)
+        return max_var
+        # return random.choice(tied)
 
     # checks that all clauses satisfied
-    # def clause_satisfy(self, var=None):
     def clause_satisfy(self):
         self.unsatisfied_clause_list = [ ]
-        self.potential_variables = set()
-        # score = None
-        #
-        # if var:
-        #     score = 0
-        #
-        #     # flip variable in assignment copy
-        #     variable_copy = copy.copy(self.variable)
-        #
-        #     if var in variable_copy:
-        #         i = variable_copy.index(var)
-        #     else:
-        #         i = variable_copy.index(self.flip_var(var))
-        #     variable_copy[i] = self.flip_var(var)
+        #self.potential_variables = set()
+        self.potential_variables = [ ]
 
         all_satisfy = True
         for clause in self.clause_list:
@@ -138,23 +122,27 @@ class SAT:
                 if item in self.variable:
                     satisfy = True
             if not satisfy:
-                self.unsatisfied_clause_list.append(clause)
-                for var in clause:
-                    self.potential_variables.add(var)
-                all_satisfy = False
-                #return False
+                if clause not in self.unsatisfied_clause_list:
+                    self.unsatisfied_clause_list.append(clause)
 
-        # if var:
-        #     return score
-        # else:
-        #     return all_satisfy
-        # # return True
+                for item in clause:
+                    if item not in self.variable:
+                        flipped_var = self.flip_var(item)
+                        if flipped_var not in self.potential_variables:
+                            self.potential_variables.append(flipped_var)
+                        # self.potential_variables.add(self.flip_var(item))
+                    # else:
+                    #     self.potential_variables.append
+
+
+                    #self.potential_variables.add(self.flip_var(var))
+                all_satisfy = False
 
         return all_satisfy
 
     def walksat(self, max_flip=50, max_tries=100000):
 
-        # randomly generate truth assignment\
+        # randomly generate truth assignment
         self.random_assignment(self.variable)
 
         # 100,000
@@ -165,37 +153,53 @@ class SAT:
 
             # unsatisfied list is empty (i.e. complete assignment)
             if len(self.unsatisfied_clause_list) == 0:
-            #if self.clause_satisfy():
                 print('all clauses satisfied')
                 return self.variable
 
-            # threshold is 0.7
+            # threshold is 0.9
             if random.uniform(0, 1) > self.threshold:
-                rand_clause = random.choice(self.unsatisfied_clause_list)
-                rand_var = random.choice(list(rand_clause))
+                #self.flipped_history = set()
 
-                if rand_var in self.variable:
-                    i = self.variable.index(rand_var)
-                else:
-                    i = self.variable.index(self.flip_var(rand_var))
+                rand_var = random.choice(self.potential_variables)
+                # rand_var = random.choice(self.variable)
 
+                #
+                # if rand_var in self.variable:
+                i = self.variable.index(rand_var)
+                # else:
+                # i = self.variable.index(self.flip_var(rand_var))
                 self.variable[i] = self.flip_var(rand_var)
 
-            # else: highest score
             else:
-                max_var = self.max_variable_score()
-                print('max var', max_var)
-                if max_var in self.variable:
-                    i = self.variable.index(max_var)
-                else:
-                    i = self.variable.index(self.flip_var(max_var))
+                #rand_clause = random.choice(self.unsatisfied_clause_list)
+                #rand_var = random.choice(self.potential_variables)
+                # candidates = [ ]
+                #
+                # for var in rand_clause:
+                #     if var not in self.variable:
+                #         candidates.append(self.flip_var(var))
+                #     else:
+                #         candidates.append(var)
 
-                self.variable[i] = self.flip_var(max_var)
-            print("var list", self.variable)
-            print('lenght of unsatisfied', len(self.unsatisfied_clause_list))
-        # return truth assignment of alpha if found
+                #max_var = self.max_variable_score(candidates)
+                max_var = self.max_variable_score(self.potential_variables)
+
+                print('max var', max_var)
+                # if max_var in self.variable:
+                #     i = self.variable.index(max_var)
+                # else:
+                i = self.variable.index(max_var)
+                flipped_var = self.flip_var(max_var)
+                #self.flipped_history.add(flipped_var)
+                self.variable[i] = flipped_var
+
+                # self.variable[i] = self.flip_var(max_var)
+
+            #print("Unsatisfied clauses: ", self.unsatisfied_clause_list)
+            print('Length of unsatisfied: ', len(self.unsatisfied_clause_list))
+
         print("no satisfying assignment found")
-        return
+        return False
 
     def write_solution(self, filename):
         file = open(filename, "w")
