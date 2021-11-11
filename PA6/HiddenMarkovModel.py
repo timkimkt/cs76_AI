@@ -13,6 +13,7 @@ class HiddenMarkovModel:
         self.colors_map = {i:color for i, color in enumerate(self.colors)}
         self.maze_color_map = { }  # tuple to integer
         self.assign_color()
+        self.colors_truth = self.gen_colors_truth()
 
         self.sensor_acc = 0.88
         self.sensor_err = (1-self.sensor_acc) / (len(self.colors)-1) # 0.04
@@ -21,6 +22,14 @@ class HiddenMarkovModel:
     # def __str__(self):
     #     str = "The output: "
     #     return str +=
+
+    def gen_colors_truth(self):
+        truth = np.ones((self.maze_width, self.maze_height))
+        for r in range(self.maze_height):
+            for c in range(self.maze_width):
+                truth[r][c] = self.maze_color_map[(r, c)]
+
+        return truth
 
     def load_maze(self, filename):
 
@@ -55,7 +64,7 @@ class HiddenMarkovModel:
         direction = [[1,0], [-1, 0], [0, 1], [0, -1]]
 
         result = [ ]
-        # movements = [ ]
+        movements = [ ]
 
         i = 0
         while i < moves:
@@ -71,38 +80,53 @@ class HiddenMarkovModel:
                     other_colors = [k for k in self.colors_map.keys() if k != self.maze_color_map[(new_r, new_c)] ]
                     result.append(random.choice(other_colors))
 
-                # movements.append((rand_dx, rand_dy))
+                movements.append((rand_dr, rand_dc))
 
-        return result
+        return result, movements
 
 
     # update vector: 0.88 (sensor)
 
     def filter(self, sensor_reading):
-        prob_matrix_norm = None
-        new_prob = self.intial_distribution
 
-        for color in sensor_reading:
-            predict = self.get_prediction_vector(color)
-            update = self.get_update_vector()
-            prob_matrix = predict.dot(update)
-            new_prob = prob_matrix.dot(new_prob)
+        prob_dist = self.intial_distribution
+        print("before", prob_dist)
+        for i, color in enumerate(sensor_reading):
+            pos_p = self.get_prediction_vector(color)
+            next = np.zeros((self.maze_width, self.maze_height))
+            for r1 in range(self.maze_height):
+                for c1 in range(self.maze_width):
+                    trans_model = self.get_update_vector(r1, c1)
+                    m = 0
+                    for r2 in range(self.maze_height):
+                        for c2 in range(self.maze_width):
+                            m += (trans_model[r2][c2]*prob_dist[r2][c2])
+                    next[r1][c1] = m
+            print("next,", next)
+            pos_p += next
+            prob_dist = self.normalize(pos_p)
+            print(f"curr state at iteration {i}")
+            print(prob_dist)
+        return prob_dist
 
-        prob_matrix_norm = new_prob / sum(new_prob)
+    def normalize(self, matrix):
+        total_sum = 0
+        h, w = matrix.shape
+        norm_matrix = np.zeros((h, w))
+        for r in range(h):
+            for c in range(w):
+                total_sum += matrix[r][c]
 
-        return prob_matrix_norm
-        #
-        #     get prediction vector
-        #     get update vector
-        #     multiply them
-        #     normalize
+        for r in range(h):
+            for c in range(w):
+                norm_matrix[r][c] = (matrix[r][c]/total_sum)
 
+        return norm_matrix
     # sensor model
     def get_prediction_vector(self, color):
         update_vector = np.ones((self.maze_width, self.maze_height))
         for r in range(self.maze_height):
             for c in range(self.maze_width):
-                print(color, r, c, self.maze_color_map.keys())
                 if color == self.maze_color_map[(r,c)]:
                     update_vector[r][c] = self.sensor_acc   # 0.88
                 else:
@@ -110,40 +134,37 @@ class HiddenMarkovModel:
 
         return update_vector
 
+
+    def product_sum(self, A, B):
+        h, w = A.shape
+        result = np.zeros((h, w))
+        for r in range(h):
+            for c in range(w):
+                result[r][c] = A[r][c] * B[r][c]
+        return result
+
     # transition model
-    def get_update_vector(self):
+    # def get_update_vector(self, probability):
+    def get_update_vector(self, r, c):
 
-        prediction = np.zeros((self.maze_width, self.maze_height))
+        # prediction = np.zeros((self.maze_width, self.maze_height))
         direction = [[1, 0], [-1, 0], [0, 1], [0, -1]]
+        #
+        # for r in range(self.maze_height):
+        #     for c in range(self.maze_width):
+        transition = np.zeros((self.maze_width, self.maze_height))
+        for dr, dc in direction:
+            new_r, new_c = r + dr, c + dc
+            if not (new_r >= 0 and new_r < self.maze_height and new_c >= 0 and new_c < self.maze_width):
+                new_r, new_c = r, c
+            transition[new_r][new_c] += 0.25
 
-        for r in range(self.maze_height):
-            for c in range(self.maze_width):
-                transition = np.zeros((self.maze_width, self.maze_height))
-                for dr, dc in direction:
-                    new_r, new_c = r + dr, c + dc
-                    if not (new_r >= 0 and new_r < self.maze_width and new_c >= 0 and new_c < self.maze_height):
-                        new_r, new_c = r, c
-                    #transition[new_r][new_c] += 1.0
-                    transition[new_r][new_c] += 0.25
-
-                #transition_norm = transition / sum(transition)
-                #transition_norm *= self.intial_distribution[r][c]
-                prediction += transition
-
-        return prediction
-
-    # transition/prediction vector: xt+1, xt
-
-    # prediction = zero vector - running sum
-    # loop through every point
-    #     transition vector  zero vector
-    #     loop through NESW directions:
-    #         get next_point
-    #         add 1.0 to that point's probability in the transition vector
-    #     noramlize transition vector
-    #     transition vector x point probability
-    #     preidction vector + transition vector
-
+        return transition
+        # for r in range(self.maze_height):
+        #     for c in range(self.maze_width):
+        #         prediction[r][c] += (transition[r][c] * probability[r][c])
+        #
+        # return prediction
 
 if __name__ == "__main__":
     print("Hello World")
@@ -153,20 +174,30 @@ if __name__ == "__main__":
     print(HMM.intial_distribution)
     print(HMM.colors_map)
     print(HMM.maze_color_map)
-    colors_path = HMM.move_robot(4, (1, 1))
-    print("Colors path", colors_path)
-    print("Filter result: ")
-    print(HMM.filter(colors_path))
+    start_pos = (1, 1)
+    colors_path, movement = HMM.move_robot(20, start_pos)
+    print("Starting position", start_pos)
+    print("Colors & Movement of Path", colors_path, movement)
+    print("Filter Result: ")
+    HMM.filter(colors_path)
+    print("Ground Truth: ")
+    print(HMM.colors_truth)
 
-# for c in sensor_readings:
-   ## predict
-   # pos_p = [0.88, 0.04]
-   # for w, for l:
-      # trans_moel = [0.5, 0.25, 00]
-      # m = for each cell: trasn_model[cell] x curr_state[cell
-      # sum (m)
-      # next[w][l] = sum(m)
 
-   # pos_p += np.array(next)
-   # curr_sate = noramlize(pos_p)    ( curr state --> 0.0625, 0.0625)
-   # print
+    # def filter(self, sensor_reading):
+    #     prob_matrix_norm = None
+    #     new_prob = self.intial_distribution
+    #
+    #     for i, color in enumerate(sensor_reading):
+    #         predict = self.get_prediction_vector(color)
+    #         update = self.get_update_vector(new_prob)
+    #         print("update", update)
+    #         prob_matrix = predict.dot(update)
+    #         #print("prob matrix 2", prob_matrix)
+    #         new_prob = prob_matrix.dot(new_prob)
+    #         #print(f"After step {i}: ")
+    #         #print(new_prob)
+    #
+    #     prob_matrix_norm = new_prob / sum(new_prob)
+    #
+    #     return prob_matrix_norm
