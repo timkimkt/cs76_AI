@@ -176,7 +176,7 @@ class SAT:
                 print(f'All clauses satisfied for {self.puzzle}')
                 return self.variable
 
-            # threshold for random choice is 0.8
+            # threshold for random choice is 0.9
             if random.uniform(0, 1) > self.threshold:
 
                 rand_var = random.choice(self.potential_variables)

@@ -40,18 +40,18 @@ class HiddenMarkovModel:
         self.maze_height = len(lines)
         self.maze_array = list("".join(lines))
 
-    def rc_to_index(self, x, y):
-        return (self.maze_height - y - 1) * self.maze_width + x
+    # def rc_to_index(self, x, y):
+    #     return (self.maze_height - y - 1) * self.maze_width + x
 
+    # assume top-left x, y starts with 0, 0 (matrix convention)
     def assign_color(self):
-        for x in range(self.maze_width):
-            for y in range(self.maze_height-1, -1, -1):
-                self.maze_color_map[(x, y)] = random.randrange(0, len(self.colors))
+        for r in range(self.maze_height):
+            for c in range(self.maze_width):
+                self.maze_color_map[(r, c)] = random.randrange(0, len(self.colors))
 
-    # assume bottom-left x, y starts with 0, 0
     def move_robot(self, moves, start_pos):
 
-        x, y = start_pos
+        r, c = start_pos
         direction = [[1,0], [-1, 0], [0, 1], [0, -1]]
 
         result = [ ]
@@ -59,15 +59,78 @@ class HiddenMarkovModel:
 
         i = 0
         while i < moves:
-            rand_dx, rand_dy = random.choice(direction)
-            new_x, new_y = x + rand_dx, y + rand_dy
-            if new_x >= 0 and x < self.maze_width and y >= 0 and y < self.maze_height:
+            rand_dr, rand_dc = random.choice(direction)
+            new_r, new_c = r + rand_dr, c + rand_dc
+            if new_r >= 0 and new_r < self.maze_height and new_c >= 0 and new_c < self.maze_width:
                 # append color if the robot has moved
                 i += 1
-                result.append(self.maze_color_map[(new_x, new_y)])
+                random_var = random.uniform(0, 1)
+                if random_var >= 0.88:
+                    result.append(self.maze_color_map[(new_r, new_c)])
+                else:
+                    other_colors = [k for k in self.colors_map.keys() if k != self.maze_color_map[(new_r, new_c)] ]
+                    result.append(random.choice(other_colors))
+
                 # movements.append((rand_dx, rand_dy))
 
         return result
+
+
+    # update vector: 0.88 (sensor)
+
+    def filter(self, sensor_reading):
+        prob_matrix_norm = None
+        new_prob = self.intial_distribution
+
+        for color in sensor_reading:
+            predict = self.get_prediction_vector(color)
+            update = self.get_update_vector()
+            prob_matrix = predict.dot(update)
+            new_prob = prob_matrix.dot(new_prob)
+
+        prob_matrix_norm = new_prob / sum(new_prob)
+
+        return prob_matrix_norm
+        #
+        #     get prediction vector
+        #     get update vector
+        #     multiply them
+        #     normalize
+
+    # sensor model
+    def get_prediction_vector(self, color):
+        update_vector = np.ones((self.maze_width, self.maze_height))
+        for r in range(self.maze_height):
+            for c in range(self.maze_width):
+                print(color, r, c, self.maze_color_map.keys())
+                if color == self.maze_color_map[(r,c)]:
+                    update_vector[r][c] = self.sensor_acc   # 0.88
+                else:
+                    update_vector[r][c] = self.sensor_err   # 0.04
+
+        return update_vector
+
+    # transition model
+    def get_update_vector(self):
+
+        prediction = np.zeros((self.maze_width, self.maze_height))
+        direction = [[1, 0], [-1, 0], [0, 1], [0, -1]]
+
+        for r in range(self.maze_height):
+            for c in range(self.maze_width):
+                transition = np.zeros((self.maze_width, self.maze_height))
+                for dr, dc in direction:
+                    new_r, new_c = r + dr, c + dc
+                    if not (new_r >= 0 and new_r < self.maze_width and new_c >= 0 and new_c < self.maze_height):
+                        new_r, new_c = r, c
+                    #transition[new_r][new_c] += 1.0
+                    transition[new_r][new_c] += 0.25
+
+                #transition_norm = transition / sum(transition)
+                #transition_norm *= self.intial_distribution[r][c]
+                prediction += transition
+
+        return prediction
 
     # transition/prediction vector: xt+1, xt
 
@@ -81,31 +144,6 @@ class HiddenMarkovModel:
     #     transition vector x point probability
     #     preidction vector + transition vector
 
-    # update vector: 0.88 (sensor)
-
-    # for each sensor reading:
-    #     get prediction vector
-    #     get update vector
-    #     multiply them
-    #     normalize
-
-    def get_update_vector(self, color):
-        update_vector = np.ones((self.maze_width, self.maze_height))
-        for x in range(self.maze_width):
-            for y in range(self.maze_height):
-
-
-
-
-    def state_transition(self):
-
-        trans_matrix = np.zeros((16, 16))
-
-
-        pass
-
-    def sensor_model(self):
-        pass
 
 if __name__ == "__main__":
     print("Hello World")
@@ -115,4 +153,20 @@ if __name__ == "__main__":
     print(HMM.intial_distribution)
     print(HMM.colors_map)
     print(HMM.maze_color_map)
-    print(HMM.move_robot(4, (1, 1)))
+    colors_path = HMM.move_robot(4, (1, 1))
+    print("Colors path", colors_path)
+    print("Filter result: ")
+    print(HMM.filter(colors_path))
+
+# for c in sensor_readings:
+   ## predict
+   # pos_p = [0.88, 0.04]
+   # for w, for l:
+      # trans_moel = [0.5, 0.25, 00]
+      # m = for each cell: trasn_model[cell] x curr_state[cell
+      # sum (m)
+      # next[w][l] = sum(m)
+
+   # pos_p += np.array(next)
+   # curr_sate = noramlize(pos_p)    ( curr state --> 0.0625, 0.0625)
+   # print
