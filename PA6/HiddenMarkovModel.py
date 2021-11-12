@@ -168,7 +168,6 @@ class HiddenMarkovModel:
             # DEBUG:
             # print("position prob:")
             # print(position_prob)
-
             next = np.zeros((self.maze_width, self.maze_height))
 
             for r1 in range(self.maze_height):
@@ -181,12 +180,14 @@ class HiddenMarkovModel:
                     for r2 in range(self.maze_height):
                         for c2 in range(self.maze_width):
                             m += (trans_model[r2][c2]*prob_dist[r2][c2])
+
+                    # print('m', m, (trans_model * prob_dist).sum())
                     next[r1][c1] = m
 
                     # DEBUG:
                     # print("next: ")
                     # print(next)
-
+            position_prob += next
             prob_dist = self.normalize(position_prob)
             # print prob distrib at every iteration (sensor reading)
             print(f"Prob Distribution after {i+1} x filter")
