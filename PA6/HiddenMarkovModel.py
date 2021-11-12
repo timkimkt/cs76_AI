@@ -29,8 +29,9 @@ class HiddenMarkovModel:
         self.sensor_acc = 0.88       # sensor accuracy
         self.sensor_err = (1-self.sensor_acc) / (len(self.colors)-1) # error rate for each color (0.04)
         # create uniform distribution of initial probabilities
-        self.intial_distribution = np.ones((self.maze_height, self.maze_width)) * (1/(self.maze_width*self.maze_height))
+        self.intial_distribution = self.generate_init_dist()
         self.prob_dist_list = [ ]
+
 
     # read the maze file into a list of strings
     def load_maze(self, filename):
@@ -48,7 +49,7 @@ class HiddenMarkovModel:
         # update maze dimensions
         self.maze_width = len(lines[0])
         self.maze_height = len(lines)
-
+        self.floor_count = "".join(lines).count(".")
         # return an array of the maze
         return list("".join(lines))
 
@@ -57,7 +58,8 @@ class HiddenMarkovModel:
     def assign_color(self):
         for r in range(self.maze_height):
             for c in range(self.maze_width):
-                self.maze_color_map[(r, c)] = random.randrange(0, len(self.colors))
+                if self.is_floor(r, c):
+                    self.maze_color_map[(r, c)] = random.randrange(0, len(self.colors))
 
     # create a map of a true colors of the maze cells
     #
@@ -65,12 +67,23 @@ class HiddenMarkovModel:
         truth = np.ones((self.maze_height, self.maze_width), dtype='str')
         for r in range(self.maze_height):
             for c in range(self.maze_width):
-                if integer:
-                    truth[r][c] = self.maze_color_map[(r, c)]
+                if self.is_floor(r, c):
+                    if integer:
+                        truth[r][c] = self.maze_color_map[(r, c)]
+                    else:
+                        truth[r][c] = self.colors[self.maze_color_map[(r, c)]]
                 else:
-                    truth[r][c] = self.colors[self.maze_color_map[(r, c)]]
-
+                    truth[r][c] = "#"
         return truth
+
+    def generate_init_dist(self):
+        init = np.zeros((self.maze_height, self.maze_width))
+        for r in range(self.maze_height):
+            for c in range(self.maze_width):
+                if self.is_floor(r, c):
+                    init[r][c] = (1 / (self.floor_count))
+
+        return init
 
     # move the robot for a given number of steps from given position
     def move_robot(self, steps):
@@ -114,24 +127,25 @@ class HiddenMarkovModel:
 
     # sensor model
     # probability distribution given a single color reading
-    def get_prediction_vector(self, color):
+    def get_prediction_matrix(self, color):
 
-        update_vector = np.ones((self.maze_height, self.maze_width))
+        update_vector = np.zeros((self.maze_height, self.maze_width))
 
         for r in range(self.maze_height):
             for c in range(self.maze_width):
-                # if sensor reading matches color of maze
-                if color == self.maze_color_map[(r,c)]:
-                    update_vector[r][c] = self.sensor_acc   # 0.88 probability
-                # if sensor reading is different
-                else:
-                    update_vector[r][c] = self.sensor_err   # 0.04 probability
+                if self.is_floor(r, c):
+                    # if sensor reading matches color of maze
+                    if color == self.maze_color_map[(r,c)]:
+                        update_vector[r][c] = self.sensor_acc   # 0.88 probability
+                    # if sensor reading is different
+                    else:
+                        update_vector[r][c] = self.sensor_err   # 0.04 probability
 
         return update_vector
 
     # transition model
     # probability distribution from a given cell location
-    def get_update_vector(self, r, c):
+    def get_update_matrix(self, r, c):
 
         direction = [[1, 0], [-1, 0], [0, 1], [0, -1]]
         transition = np.zeros((self.maze_height, self.maze_width))
@@ -140,7 +154,6 @@ class HiddenMarkovModel:
             new_r, new_c = r + dr, c + dc
             # stay at current cell if out of bounds
             if not (self.is_floor(new_r, new_c)):
-            #if not (new_r >= 0 and new_r < self.maze_height and new_c >= 0 and new_c < self.maze_width):
                 new_r, new_c = r, c
             transition[new_r][new_c] += 0.25
 
@@ -162,36 +175,28 @@ class HiddenMarkovModel:
 
         # for each sensor reading
         for i, color in enumerate(sensor_reading):
-            position_prob = self.get_prediction_vector(color)
-            # DEBUG:
-            # print("position prob:")
-            # print(position_prob)
-            next = np.zeros((self.maze_height, self.maze_width))
 
+            position_prob = self.get_prediction_matrix(color)
+            next = np.zeros((self.maze_height, self.maze_width))
             for r1 in range(self.maze_height):
                 for c1 in range(self.maze_width):
-                    trans_model = self.get_update_vector(r1, c1)
-                    # DEBUG:
-                    # print("transition model:")
-                    # print(trans_model)
-                    m = 0
-                    for r2 in range(self.maze_height):
-                        for c2 in range(self.maze_width):
-                            m += (trans_model[r2][c2]*prob_dist[r2][c2])
+                    if self.is_floor(r1, c1):
+                        trans_model = self.get_update_matrix(r1, c1)
+                        s = 0
+                        for r2 in range(self.maze_height):
+                            for c2 in range(self.maze_width):
+                                s += (trans_model[r2][c2]*prob_dist[r2][c2])
+                        next[r1][c1] = s
 
-                    # print('m', m, (trans_model * prob_dist).sum())
-                    next[r1][c1] = m
-
-                    # DEBUG:
-                    # print("next: ")
-                    # print(next)
             position_prob += next
             prob_dist = self.normalize(position_prob)
+
             # print prob distrib at every iteration (sensor reading)
             print(f"Prob Distribution after {i+1} x filter")
             np.set_printoptions(precision=3)
             print(prob_dist)
 
+            # print change compared to prev prob distribution
             print("Difference w/ previous distriubtion: ")
             print(prob_dist-self.prob_dist_list[-1])
             self.prob_dist_list.append(prob_dist)
@@ -199,17 +204,19 @@ class HiddenMarkovModel:
             # print actual robot location in maze
             print("Robot location in maze")
             self.print_robotloc(i+1)
-            # print top 3 locations with highest probability
-            prob_copy = copy.deepcopy(prob_dist)
-            top_third = np.sort(prob_copy.flatten())[::-1][:3][-1]
-            print("Locations w/ high prob")
-            self.print_potential_robotloc(top_third, prob_dist)
 
+            # print locations with highest probability
+            prob_copy = copy.deepcopy(prob_dist)
+            top_prob = np.sort(prob_copy.flatten())[::-1][:3][-1]
+            print("Locations w/ high prob")
+            self.print_potential_robotloc(top_prob, prob_dist)
+
+            # other information that displays path and measurement of robot
             print("location: ", self.locations[i+1])
             print("Sensed color:", self.colors_map[color], "// Actual color:",
                   self.colors_map[self.maze_color_map[self.locations[i+1]]])
             print("Current path: ", [self.colors_map[i] for i in sensor_reading[:i+1]])
-            print(self.colors_truth)
+            print(self.colors_truth)         # true color value of the maze
             print("-----------------------------------------------------------------------------")
 
         return prob_dist
@@ -244,7 +251,7 @@ class HiddenMarkovModel:
             s += "\n"
         print(s)
 
-    # print maze with robot
+    # print most likely position of robot in the maze
     def print_potential_robotloc(self, top_third, prob_dist):
         s = ""
         for r in range(self.maze_height):
@@ -257,9 +264,8 @@ class HiddenMarkovModel:
         print(s)
 
 if __name__ == "__main__":
-    HMM = HiddenMarkovModel("maze1.maz", start_pos=(1, 2))
-    # print(HMM.colors_map)
-    colors_path, positions = HMM.move_robot(steps=20)
+    HMM = HiddenMarkovModel("maze1.maz", start_pos=(1, 1))
+    colors_path, positions = HMM.move_robot(steps=10)
     print("-----------------------------------------------------------------------------")
     print("Hidden Markov Model Filtering: ")
     print("-----------------------------------------------------------------------------")
