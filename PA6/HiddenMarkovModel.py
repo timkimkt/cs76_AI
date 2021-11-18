@@ -149,7 +149,6 @@ class HiddenMarkovModel:
 
         direction = [[1, 0], [-1, 0], [0, 1], [0, -1]]
         transition = np.zeros((self.maze_height, self.maze_width))
-
         for dr, dc in direction:
             new_r, new_c = r + dr, c + dc
             # stay at current cell if out of bounds
@@ -182,18 +181,15 @@ class HiddenMarkovModel:
                 for c1 in range(self.maze_width):
                     if self.is_floor(r1, c1):
                         trans_model = self.get_update_matrix(r1, c1)
-                        s = 0
-                        for r2 in range(self.maze_height):
-                            for c2 in range(self.maze_width):
-                                s += (trans_model[r2][c2]*prob_dist[r2][c2])
-                        next[r1][c1] = s
+                        s = (trans_model*prob_dist[r1][c1])
+                        next += s
 
-            position_prob += next
-            prob_dist = self.normalize(position_prob)
+            # calculate the new probability and normalize
+            prob_dist = self.normalize(position_prob*next)
 
             # print prob distrib at every iteration (sensor reading)
             print(f"Prob Distribution after {i+1} x filter")
-            np.set_printoptions(precision=3)
+            np.set_printoptions(precision=3, suppress=True)
             print(prob_dist)
 
             # print change compared to prev prob distribution
@@ -228,15 +224,14 @@ class HiddenMarkovModel:
         norm_matrix = np.zeros((h, w))
 
         # calculate total sum
-        for r in range(h):
-            for c in range(w):
-                total_sum += matrix[r][c]
+        for r1 in range(h):
+            for c1 in range(w):
+                total_sum += matrix[r1][c1]
 
         # divide each cell by total
-        for r in range(h):
-            for c in range(w):
-                norm_matrix[r][c] = (matrix[r][c]/total_sum)
-
+        for r2 in range(h):
+            for c2 in range(w):
+                norm_matrix[r2][c2] = (matrix[r2][c2]/total_sum)
         return norm_matrix
 
     # print maze with robot
@@ -264,7 +259,7 @@ class HiddenMarkovModel:
         print(s)
 
 if __name__ == "__main__":
-    HMM = HiddenMarkovModel("maze1.maz", start_pos=(1, 1))
+    HMM = HiddenMarkovModel("maze4.maz", start_pos=(1, 1))
     colors_path, positions = HMM.move_robot(steps=10)
     print("-----------------------------------------------------------------------------")
     print("Hidden Markov Model Filtering: ")
